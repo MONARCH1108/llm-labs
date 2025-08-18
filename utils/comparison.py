@@ -64,7 +64,8 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
                         f"Readability - Sentences: {readability['sentence_count']}, "
                         f"Syllables: {readability['syllable_count']}, "
                         f"Flesch Score: {readability['flesch_reading_ease']}, "
-                        f"SMOG Index: {readability['smog_index']}"
+                        f"SMOG Index: {readability['smog_index']}, "
+                        f"Coleman-Liau Index: {readability['coleman_liau_index']}"
                     )
                     logging.info(f"Response:\n{response}\n{'-'*50}")
 
@@ -85,7 +86,9 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
                         "readability": {
                             "sentence_count": 0,
                             "syllable_count": 0,
-                            "flesch_reading_ease": "N/A"
+                            "flesch_reading_ease": "N/A",
+                            "smog_index": "N/A",              # ✅ add this
+                            "coleman_liau_index": "N/A" 
                         }
                     }
 
@@ -101,6 +104,7 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
             f"Syllables: {result['readability']['syllable_count']} | "
             f"Flesch Score: {result['readability']['flesch_reading_ease']} | "
             f"SMOG Index: {result['readability']['smog_index']} | "
+            f"Coleman-Liau Index: {result['readability']['coleman_liau_index']}"
         )
         print(f"📤 Output:\n{result['response']}")
         print("\n" + "=" * 50)

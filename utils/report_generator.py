@@ -27,6 +27,7 @@ def extract_log_metrics():
             response_time = float(re.search(r"Response Time: ([\d\.]+)s", entry).group(1))
             flesch = re.search(r"Flesch Score: ([\d\.NA]+)", entry).group(1)
             smog = re.search(r"SMOG Index: ([\d\.\-NA]+)", entry).group(1)
+            coleman_liau = re.search(r"Coleman-Liau Index: ([\d\.\-NA]+)", entry).group(1)
 
             summary.append({
                 "provider": provider,
@@ -38,7 +39,8 @@ def extract_log_metrics():
                 "total_tokens": total_tokens,
                 "response_time": response_time,
                 "flesch_score": flesch,
-                "smog_index": smog
+                "smog_index": smog,
+                "coleman_liau_index": coleman_liau
             })
         except Exception:
             continue
@@ -68,11 +70,17 @@ def generate_report(summary: list, user_question: str):
         smog_scores = [float(r["smog_index"]) for r in records if r["smog_index"] != "N/A"]
         avg_smog = round(sum(smog_scores) / len(smog_scores), 2) if smog_scores else "N/A"
 
+        cli_scores = [float(r["coleman_liau_index"]) for r in records if r["coleman_liau_index"] != "N/A"]
+        avg_cli = round(sum(cli_scores) / len(cli_scores), 2) if cli_scores else "N/A"
+
+
         report_lines.append(f"- 🔢 Average Input Tokens: {avg_input:.2f}")
         report_lines.append(f"- 🔢 Average Output Tokens: {avg_output:.2f}")
         report_lines.append(f"- ⏱️ Average Response Time: {avg_response_time:.2f} sec")
         report_lines.append(f"- 📚 Avg. Flesch Reading Ease: {avg_flesch}")
         report_lines.append(f"- 📖 Avg. SMOG Index (Grade Level): {avg_smog}")
+        report_lines.append(f"- ✍️ Avg. Coleman-Liau Index: {avg_cli}")
+
         report_lines.append("")
 
     score_text = "\n".join(report_lines)
@@ -89,6 +97,7 @@ def generate_report(summary: list, user_question: str):
         "- Average response time (speed)\n"
         "- Average Flesch Reading Ease (clarity/readability)\n\n"
         "- Average SMOG Index (education level needed)\n\n"
+        "- Average Coleman-Liau Index (grade level)\n\n"
         "DO NOT add any subjective commentary or external knowledge. "
         "Just summarize which model(s) have the strongest numeric performance for each metric, and conclude "
         "which model performed better overall—purely based on these statistics."
