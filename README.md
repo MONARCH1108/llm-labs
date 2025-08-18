@@ -1,4 +1,4 @@
-# LLM Labs 🚀
+# LLM Labs 
 
 #### In Development
 
