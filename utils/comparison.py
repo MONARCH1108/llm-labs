@@ -63,7 +63,8 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
                     logging.info(
                         f"Readability - Sentences: {readability['sentence_count']}, "
                         f"Syllables: {readability['syllable_count']}, "
-                        f"Flesch Score: {readability['flesch_reading_ease']}"
+                        f"Flesch Score: {readability['flesch_reading_ease']}, "
+                        f"SMOG Index: {readability['smog_index']}"
                     )
                     logging.info(f"Response:\n{response}\n{'-'*50}")
 
@@ -98,7 +99,8 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
         print(
             f"📚 Readability - Sentences: {result['readability']['sentence_count']} | "
             f"Syllables: {result['readability']['syllable_count']} | "
-            f"Flesch Score: {result['readability']['flesch_reading_ease']}"
+            f"Flesch Score: {result['readability']['flesch_reading_ease']} | "
+            f"SMOG Index: {result['readability']['smog_index']} | "
         )
         print(f"📤 Output:\n{result['response']}")
         print("\n" + "=" * 50)

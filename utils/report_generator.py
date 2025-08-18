@@ -26,6 +26,7 @@ def extract_log_metrics():
             input_tokens, output_tokens, total_tokens = map(int, re.findall(r"Tokens \(Input/Output/Total\): (\d+)/(\d+)/(\d+)", entry)[0])
             response_time = float(re.search(r"Response Time: ([\d\.]+)s", entry).group(1))
             flesch = re.search(r"Flesch Score: ([\d\.NA]+)", entry).group(1)
+            smog = re.search(r"SMOG Index: ([\d\.\-NA]+)", entry).group(1)
 
             summary.append({
                 "provider": provider,
@@ -36,7 +37,8 @@ def extract_log_metrics():
                 "output_tokens": output_tokens,
                 "total_tokens": total_tokens,
                 "response_time": response_time,
-                "flesch_score": flesch
+                "flesch_score": flesch,
+                "smog_index": smog
             })
         except Exception:
             continue
@@ -59,13 +61,18 @@ def generate_report(summary: list, user_question: str):
         avg_input = sum(r["input_tokens"] for r in records) / len(records)
         avg_output = sum(r["output_tokens"] for r in records) / len(records)
         avg_response_time = sum(r["response_time"] for r in records) / len(records)
+
         flesch_scores = [float(r["flesch_score"]) for r in records if r["flesch_score"] != "N/A"]
         avg_flesch = round(sum(flesch_scores) / len(flesch_scores), 2) if flesch_scores else "N/A"
+
+        smog_scores = [float(r["smog_index"]) for r in records if r["smog_index"] != "N/A"]
+        avg_smog = round(sum(smog_scores) / len(smog_scores), 2) if smog_scores else "N/A"
 
         report_lines.append(f"- 🔢 Average Input Tokens: {avg_input:.2f}")
         report_lines.append(f"- 🔢 Average Output Tokens: {avg_output:.2f}")
         report_lines.append(f"- ⏱️ Average Response Time: {avg_response_time:.2f} sec")
         report_lines.append(f"- 📚 Avg. Flesch Reading Ease: {avg_flesch}")
+        report_lines.append(f"- 📖 Avg. SMOG Index (Grade Level): {avg_smog}")
         report_lines.append("")
 
     score_text = "\n".join(report_lines)
@@ -81,6 +88,7 @@ def generate_report(summary: list, user_question: str):
         "- Average input/output tokens (efficiency)\n"
         "- Average response time (speed)\n"
         "- Average Flesch Reading Ease (clarity/readability)\n\n"
+        "- Average SMOG Index (education level needed)\n\n"
         "DO NOT add any subjective commentary or external knowledge. "
         "Just summarize which model(s) have the strongest numeric performance for each metric, and conclude "
         "which model performed better overall—purely based on these statistics."

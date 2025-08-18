@@ -1,0 +1,18 @@
+2025-08-18 11:27:30,998 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-18 11:27:32,371 - INFO - Provider: GROQ | Model: llama-3.1-8b-instant | Prompt: zero_shot_prompt
+2025-08-18 11:27:32,371 - INFO - Prompt Type: General | Prompt Length: 51 words
+2025-08-18 11:27:32,371 - INFO - Tokens (Input/Output/Total): 63/98/161
+2025-08-18 11:27:32,371 - INFO - Response Time: 1.452s | Words: 69
+2025-08-18 11:27:32,371 - INFO - Readability - Sentences: 8, Syllables: 95, Flesch Score: 74.94, SMOG Index: 6.63
+2025-08-18 11:27:32,371 - INFO - Response:
+It's nice to meet you. I'm happy to help with any questions or topics you'd like to discuss. 
+
+If you're unsure where to start, here are a few options:
+
+1. Ask a question on a specific subject.
+2. Get recommendations for books, movies, or music.
+3. Learn about a new topic or hobby.
+4. Have a conversation about your interests or daily life.
+
+What would you like to do?
+--------------------------------------------------
