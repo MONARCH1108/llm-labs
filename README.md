@@ -1,2 +1,9 @@
-# llm-labs
-LLM Labs is an experimental project to evaluate, compare, and improve Large Language Models (LLMs).   The repo evolves daily with new metrics, features, and experiments.
+# LLM Labs 🚀
+
+#### In Development
+
+## 📌 Features
+- Multi-model comparison (Groq, Gemini, Ollama, etc.)
+- Evaluation metrics (Flesch, SMOG, Dale-Chall, etc.)
+- Log-based report generation
+- Support for different prompt templates
