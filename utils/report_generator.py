@@ -58,6 +58,22 @@ def generate_report(summary: list, user_question: str):
     report_lines = ["# 📊 LLM Performance Report\n"]
     report_lines.append(f"**User Question:** {user_question}\n")
 
+    # Interpretations
+    interpretations = {
+        "flesch": (
+            "Higher is better (easier to read). "
+            "90–100 = Very Easy, 60–70 = Standard, 0–30 = Very Difficult."
+        ),
+        "smog": (
+            "Lower is better (less years of education needed). "
+            "Typically 7–9 = Easily understood, >12 = College-level."
+        ),
+        "coleman_liau": (
+            "Lower is better (less grade level required). "
+            "8–10 = Middle school level, >12 = High school/college level."
+        )
+    }
+
     for key, records in grouped.items():
         report_lines.append(f"## 🔹 {key}")
         avg_input = sum(r["input_tokens"] for r in records) / len(records)
@@ -73,13 +89,12 @@ def generate_report(summary: list, user_question: str):
         cli_scores = [float(r["coleman_liau_index"]) for r in records if r["coleman_liau_index"] != "N/A"]
         avg_cli = round(sum(cli_scores) / len(cli_scores), 2) if cli_scores else "N/A"
 
-
         report_lines.append(f"- 🔢 Average Input Tokens: {avg_input:.2f}")
         report_lines.append(f"- 🔢 Average Output Tokens: {avg_output:.2f}")
         report_lines.append(f"- ⏱️ Average Response Time: {avg_response_time:.2f} sec")
-        report_lines.append(f"- 📚 Avg. Flesch Reading Ease: {avg_flesch}")
-        report_lines.append(f"- 📖 Avg. SMOG Index (Grade Level): {avg_smog}")
-        report_lines.append(f"- ✍️ Avg. Coleman-Liau Index: {avg_cli}")
+        report_lines.append(f"- 📚 Avg. Flesch Reading Ease: {avg_flesch} ({interpretations['flesch']})")
+        report_lines.append(f"- 📖 Avg. SMOG Index (Grade Level): {avg_smog} ({interpretations['smog']})")
+        report_lines.append(f"- ✍️ Avg. Coleman-Liau Index: {avg_cli} ({interpretations['coleman_liau']})")
 
         report_lines.append("")
 
@@ -87,21 +102,21 @@ def generate_report(summary: list, user_question: str):
 
     # Ask Gemini to analyze based on these numbers
     gemini_summary = query_gemini_llm(
-    model="gemini-2.0-flash",
-    user_input=score_text,
-    prompt=(
-        "You are an objective evaluator. Given the performance metrics for multiple LLMs, "
-        "analyze only the numeric data below without any assumptions or external context. "
-        "Identify which model performs better strictly based on the following measurable factors:\n\n"
-        "- Average input/output tokens (efficiency)\n"
-        "- Average response time (speed)\n"
-        "- Average Flesch Reading Ease (clarity/readability)\n\n"
-        "- Average SMOG Index (education level needed)\n\n"
-        "- Average Coleman-Liau Index (grade level)\n\n"
-        "DO NOT add any subjective commentary or external knowledge. "
-        "Just summarize which model(s) have the strongest numeric performance for each metric, and conclude "
-        "which model performed better overall—purely based on these statistics."
-    )
+        model="gemini-2.0-flash",
+        user_input=score_text,
+        prompt=(
+            "You are an objective evaluator. Given the performance metrics for multiple LLMs, "
+            "analyze only the numeric data below without any assumptions or external context. "
+            "Identify which model performs better strictly based on the following measurable factors:\n\n"
+            "- Average input/output tokens (efficiency)\n"
+            "- Average response time (speed)\n"
+            "- Average Flesch Reading Ease (clarity/readability)\n"
+            "- Average SMOG Index (education level needed)\n"
+            "- Average Coleman-Liau Index (grade level)\n\n"
+            "DO NOT add any subjective commentary or external knowledge. "
+            "Just summarize which model(s) have the strongest numeric performance for each metric, and conclude "
+            "which model performed better overall—purely based on these statistics."
+        )
     )
     report_lines.append("## 🧠 Gemini Insights\n")
     report_lines.append(gemini_summary)
