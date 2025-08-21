@@ -55,7 +55,24 @@ def compute_coleman_liau_index(char_count: int, word_count: int, sentence_count:
         return "N/A"
     except ZeroDivisionError:
         return "N/A"
+    
+def compute_gunning_fog_index(sentence_count: int, word_count: int, polysyllable_count: int) -> float | str:
+    try:
+        if sentence_count > 0 and word_count > 0:
+            score = 0.4 * ((word_count / sentence_count) + 100 * (polysyllable_count / word_count))
+            return round(score, 2)
+        return "N/A"
+    except ZeroDivisionError:
+        return "N/A"
 
+def compute_automated_readability_index(char_count: int, word_count: int, sentence_count: int) -> float | str:
+    try:
+        if word_count > 0 and sentence_count > 0:
+            score = 4.71 * (char_count / word_count) + 0.5 * (word_count / sentence_count) - 21.43
+            return round(score, 2)
+        return "N/A"
+    except ZeroDivisionError:
+        return "N/A"
 
 def get_readability_metrics(text: str) -> dict:
     stats = get_text_stats(text)
@@ -68,10 +85,21 @@ def get_readability_metrics(text: str) -> dict:
     coleman_liau = compute_coleman_liau_index(
         stats["char_count"], stats["word_count"], stats["sentence_count"]
     )
+    gunning_fog = compute_gunning_fog_index(
+        stats["sentence_count"], stats["word_count"], stats["polysyllable_count"]
+    )
+    ari = compute_automated_readability_index(
+        stats["char_count"], stats["word_count"], stats["sentence_count"]
+    )
     return {
         "sentence_count": stats["sentence_count"],
+        "word_count": stats["word_count"],
         "syllable_count": stats["syllable_count"],
+        "polysyllable_count": stats["polysyllable_count"],
+        "char_count": stats["char_count"],
         "flesch_reading_ease": flesch,
         "smog_index": smog,
         "coleman_liau_index": coleman_liau,
+        "gunning_fog_index": gunning_fog,
+        "automated_readability_index": ari,
     }

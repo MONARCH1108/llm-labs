@@ -65,7 +65,9 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
                         f"Syllables: {readability['syllable_count']}, "
                         f"Flesch Score: {readability['flesch_reading_ease']}, "
                         f"SMOG Index: {readability['smog_index']}, "
-                        f"Coleman-Liau Index: {readability['coleman_liau_index']}"
+                        f"Coleman-Liau Index: {readability['coleman_liau_index']}, "
+                        f"Gunning Fog Index: {readability['gunning_fog_index']}, "
+                        f"Automated Readability Index: {readability['automated_readability_index']}, "
                     )
                     logging.info(f"Response:\n{response}\n{'-'*50}")
 
@@ -87,8 +89,10 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
                             "sentence_count": 0,
                             "syllable_count": 0,
                             "flesch_reading_ease": "N/A",
-                            "smog_index": "N/A",              # ✅ add this
-                            "coleman_liau_index": "N/A" 
+                            "smog_index": "N/A",            
+                            "coleman_liau_index": "N/A" ,
+                            "gunning_fog_index": "N/A" ,
+                            "automated_readability_index": "N/A" ,
                         }
                     }
 
@@ -104,7 +108,9 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
             f"Syllables: {result['readability']['syllable_count']} | "
             f"Flesch Score: {result['readability']['flesch_reading_ease']} | "
             f"SMOG Index: {result['readability']['smog_index']} | "
-            f"Coleman-Liau Index: {result['readability']['coleman_liau_index']}"
+            f"Coleman-Liau Index: {result['readability']['coleman_liau_index']} | "
+            f"Gunning Fog Index: {result['readability']['gunning_fog_index']} | "
+            f"Automated Readability Index: {result['readability']['automated_readability_index']} | "
         )
         print(f"📤 Output:\n{result['response']}")
         print("\n" + "=" * 50)
