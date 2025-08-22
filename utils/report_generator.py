@@ -40,6 +40,12 @@ def extract_log_metrics():
             coleman_liau = re.search(r"Coleman-Liau Index: ([\d\.NA\-]+)", entry).group(1)
             gunning_fog = re.search(r"Gunning Fog Index: ([\d\.NA\-]+)", entry).group(1)
             ari = re.search(r"Automated Readability Index: ([\d\.NA\-]+)", entry).group(1)
+            dale_chall = re.search(r"Dale-Chall: ([\d\.NA\-]+)", entry).group(1)
+            forcast = re.search(r"FORCAST: ([\d\.NA\-]+)", entry).group(1)
+            linsear_write = re.search(r"Linsear Write: ([\d\.NA\-]+)", entry).group(1)
+            lix = re.search(r"LIX: ([\d\.NA\-]+)", entry).group(1)
+            rix = re.search(r"RIX: ([\d\.NA\-]+)", entry).group(1)
+
 
             summary.append({
                 "provider": provider,
@@ -55,6 +61,11 @@ def extract_log_metrics():
                 "coleman_liau_index": coleman_liau,
                 "gunning_fog_index": gunning_fog,
                 "ari_index": ari,
+                "dale_chall": dale_chall,
+                "forcast": forcast,
+                "linsear_write": linsear_write,
+                "lix": lix,
+                "rix": rix,
             })
         except Exception:
             continue
@@ -94,6 +105,26 @@ def generate_report(summary: list, user_question: str):
             "Lower is better (grade-level readability). "
             "1–6 = Elementary, 7–12 = Middle/High school, 13+ = College-level."
         ),
+        "dale_chall": (
+            "Lower is better (uses familiar words). "
+            "<8 = Easy, 8–10 = Medium difficulty, >10 = Difficult/college-level."
+        ),
+        "forcast": (
+            "Lower is better (simpler text, often used for technical/manuals). "
+            "Around 9–10 = Plain English, >12 = Complex."
+        ),
+        "linsear_write": (
+            "Lower is better (military readability test). "
+            "<20 = Easy, 20–30 = Standard, >30 = Difficult."
+        ),
+        "lix": (
+            "Lower is better (text density). "
+            "<30 = Very easy, 30–40 = Easy, 40–50 = Standard, 50+ = Difficult."
+        ),
+        "rix": (
+            "Lower is better (based on long words per sentence). "
+            "<2 = Easy, 2–5 = Standard, >5 = Difficult."
+        ),
     }
 
     for key, records in grouped.items():
@@ -108,6 +139,12 @@ def generate_report(summary: list, user_question: str):
         cli_scores = [safe_float(r["coleman_liau_index"]) for r in records if safe_float(r["coleman_liau_index"]) is not None]
         gf_scores = [safe_float(r["gunning_fog_index"]) for r in records if safe_float(r["gunning_fog_index"]) is not None]
         ari_scores = [safe_float(r["ari_index"]) for r in records if safe_float(r["ari_index"]) is not None]
+        dale_chall_scores = [safe_float(r["dale_chall"]) for r in records if safe_float(r["dale_chall"]) is not None]
+        forcast_scores = [safe_float(r["forcast"]) for r in records if safe_float(r["forcast"]) is not None]
+        linsear_scores = [safe_float(r["linsear_write"]) for r in records if safe_float(r["linsear_write"]) is not None]
+        lix_scores = [safe_float(r["lix"]) for r in records if safe_float(r["lix"]) is not None]
+        rix_scores = [safe_float(r["rix"]) for r in records if safe_float(r["rix"]) is not None]
+
 
         # Count failures
         flesch_failures = len(records) - len(flesch_scores)
@@ -115,6 +152,11 @@ def generate_report(summary: list, user_question: str):
         cli_failures = len(records) - len(cli_scores)
         gf_failures = len(records) - len(gf_scores)
         ari_failures = len(records) - len(ari_scores)
+        dale_chall_failures = len(records) - len(dale_chall_scores)
+        forcast_failures = len(records) - len(forcast_scores)
+        linsear_failures = len(records) - len(linsear_scores)
+        lix_failures = len(records) - len(lix_scores)
+        rix_failures = len(records) - len(rix_scores)
 
         # Averages
         avg_flesch = round(sum(flesch_scores) / len(flesch_scores), 2) if flesch_scores else "N/A"
@@ -122,6 +164,12 @@ def generate_report(summary: list, user_question: str):
         avg_cli = round(sum(cli_scores) / len(cli_scores), 2) if cli_scores else "N/A"
         avg_gf = round(sum(gf_scores) / len(gf_scores), 2) if gf_scores else "N/A"
         avg_ari = round(sum(ari_scores) / len(ari_scores), 2) if ari_scores else "N/A"
+        avg_dale_chall = round(sum(dale_chall_scores) / len(dale_chall_scores), 2) if dale_chall_scores else "N/A"
+        avg_forcast = round(sum(forcast_scores) / len(forcast_scores), 2) if forcast_scores else "N/A"
+        avg_linsear = round(sum(linsear_scores) / len(linsear_scores), 2) if linsear_scores else "N/A"
+        avg_lix = round(sum(lix_scores) / len(lix_scores), 2) if lix_scores else "N/A"
+        avg_rix = round(sum(rix_scores) / len(rix_scores), 2) if rix_scores else "N/A"
+
 
         report_lines.append(f"- 🔢 Average Input Tokens: {avg_input:.2f}")
         report_lines.append(f"- 🔢 Average Output Tokens: {avg_output:.2f}")
@@ -131,6 +179,11 @@ def generate_report(summary: list, user_question: str):
         report_lines.append(f"- ✍️ Avg. Coleman-Liau Index: {avg_cli} ({interpretations['coleman_liau']}) – ❌ Missing: {cli_failures}")
         report_lines.append(f"- 🏛 Avg. Gunning Fog Index: {avg_gf} ({interpretations['gunning_fog']}) – ❌ Missing: {gf_failures}")
         report_lines.append(f"- 📐 Avg. Automated Readability Index (ARI): {avg_ari} ({interpretations['ari']}) – ❌ Missing: {ari_failures}")
+        report_lines.append(f"- 📖 Avg. Dale-Chall Index: {avg_dale_chall} ({interpretations['dale_chall']}) – ❌ Missing: {dale_chall_failures}")
+        report_lines.append(f"- ⚙️ Avg. FORCAST Index: {avg_forcast} ({interpretations['forcast']}) – ❌ Missing: {forcast_failures}")
+        report_lines.append(f"- ✈️ Avg. Linsear Write Index: {avg_linsear} ({interpretations['linsear_write']}) – ❌ Missing: {linsear_failures}")
+        report_lines.append(f"- 📏 Avg. LIX: {avg_lix} ({interpretations['lix']}) – ❌ Missing: {lix_failures}")
+        report_lines.append(f"- 🔠 Avg. RIX: {avg_rix} ({interpretations['rix']}) – ❌ Missing: {rix_failures}")
 
         report_lines.append("")
 
@@ -151,6 +204,11 @@ def generate_report(summary: list, user_question: str):
             "- Average Coleman-Liau Index (grade level)\n"
             "- Average Gunning Fog Index (long-form readability)\n\n"
             "- Average Automated Readability Index (ARI)\n\n"
+            "- Average Dale-Chall Index (vocabulary difficulty)\n"
+            "- Average FORCAST Index (technical text readability)\n"
+            "- Average Linsear Write Index (military/technical readability)\n"
+            "- Average LIX Index (sentence/word complexity)\n"
+            "- Average RIX Index (long word ratio)\n\n"
             "DO NOT add any subjective commentary or external knowledge. "
             "Just summarize which model(s) have the strongest numeric performance for each metric, and conclude "
             "which model performed better overall—purely based on these statistics."

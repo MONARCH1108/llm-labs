@@ -68,6 +68,11 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
                         f"Coleman-Liau Index: {readability['coleman_liau_index']}, "
                         f"Gunning Fog Index: {readability['gunning_fog_index']}, "
                         f"Automated Readability Index: {readability['automated_readability_index']}, "
+                        f"Dale-Chall: {readability['dale_chall_index']}, "
+                        f"FORCAST: {readability['forcast_index']}, "
+                        f"Linsear Write: {readability['linsear_write_index']}, "
+                        f"LIX: {readability['lix']}, "
+                        f"RIX: {readability['rix']}, "
                     )
                     logging.info(f"Response:\n{response}\n{'-'*50}")
 
@@ -93,6 +98,11 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
                             "coleman_liau_index": "N/A" ,
                             "gunning_fog_index": "N/A" ,
                             "automated_readability_index": "N/A" ,
+                            "dale_chall_index": "N/A",
+                            "forcast_index": "N/A",
+                            "linsear_write_index": "N/A",
+                            "lix": "N/A",
+                            "rix": "N/A" ,
                         }
                     }
 
@@ -111,6 +121,11 @@ def run_comparative_evaluation(providers_models: dict, prompts: dict, user_input
             f"Coleman-Liau Index: {result['readability']['coleman_liau_index']} | "
             f"Gunning Fog Index: {result['readability']['gunning_fog_index']} | "
             f"Automated Readability Index: {result['readability']['automated_readability_index']} | "
+            f"Dale-Chall Index: {result['readability']['dale_chall_index']} | "
+            f"FORCAST Index: {result['readability']['forcast_index']} | "
+            f"Linsear Write Index: {result['readability']['linsear_write_index']} | "
+            f"LIX: {result['readability']['lix']} | "
+            f"RIX: {result['readability']['rix']}"
         )
         print(f"📤 Output:\n{result['response']}")
         print("\n" + "=" * 50)

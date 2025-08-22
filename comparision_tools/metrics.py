@@ -74,6 +74,49 @@ def compute_automated_readability_index(char_count: int, word_count: int, senten
     except ZeroDivisionError:
         return "N/A"
 
+def compute_dale_chall_index(text: str) -> float:
+    return round(textstat.dale_chall_readability_score(text), 2)
+
+def compute_forcast_index(text: str) -> float:
+    words = [token.text for token in nlp(text) if token.is_alpha]
+    sample = words[:150]  # first 150 words
+    monosyllables = sum(1 for w in sample if textstat.syllable_count(w) == 1)
+    score = 20 - (monosyllables / 10)
+    return round(score, 2)
+
+def compute_linsear_write_index(text: str) -> float:
+    words = [token.text for token in nlp(text) if token.is_alpha]
+    sentences = list(nlp(text).sents)
+    sample_words = words[:100]  # first 100 words
+    easy = sum(1 for w in sample_words if textstat.syllable_count(w) <= 2)
+    hard = sum(1 for w in sample_words if textstat.syllable_count(w) >= 3)
+    sentence_count = max(1, len(sentences))
+    score = (easy + 3 * hard) / sentence_count
+    if score > 20:
+        score /= 2
+    else:
+        score -= 2
+    return round(score, 2)
+
+def compute_lix(text: str) -> float:
+    doc = nlp(text)
+    sentences = list(doc.sents)
+    words = [token.text for token in doc if token.is_alpha]
+    word_count = len(words)
+    sentence_count = max(1, len(sentences))
+    long_words = sum(1 for w in words if len(w) > 6)
+    score = (word_count / sentence_count) + 100 * (long_words / word_count)
+    return round(score, 2)
+
+def compute_rix(text: str) -> float:
+    doc = nlp(text)
+    sentences = list(doc.sents)
+    words = [token.text for token in doc if token.is_alpha]
+    long_words = sum(1 for w in words if len(w) > 6)
+    sentence_count = max(1, len(sentences))
+    score = long_words / sentence_count
+    return round(score, 2)
+
 def get_readability_metrics(text: str) -> dict:
     stats = get_text_stats(text)
     flesch = compute_flesch_reading_ease(
@@ -91,6 +134,21 @@ def get_readability_metrics(text: str) -> dict:
     ari = compute_automated_readability_index(
         stats["char_count"], stats["word_count"], stats["sentence_count"]
     )
+    dale_chall = compute_dale_chall_index(
+        text
+    )
+    forcast = compute_forcast_index(
+        text
+    )
+    linsear_write = compute_linsear_write_index(
+        text
+    )
+    lix = compute_lix(
+        text
+    )
+    rix = compute_rix(
+        text
+    )
     return {
         "sentence_count": stats["sentence_count"],
         "word_count": stats["word_count"],
@@ -102,4 +160,9 @@ def get_readability_metrics(text: str) -> dict:
         "coleman_liau_index": coleman_liau,
         "gunning_fog_index": gunning_fog,
         "automated_readability_index": ari,
+        "dale_chall_index": dale_chall,
+        "forcast_index": forcast,
+        "linsear_write_index": linsear_write,
+        "lix": lix,
+        "rix": rix,
     }
