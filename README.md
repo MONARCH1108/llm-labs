@@ -1,6 +1,11 @@
 # 📁 LLM Labs - Directory Structure
 
 
+LLM_Labs_V1 : Testing version only with FrontEnd (Error persist in JS in Html)
+Basic_documentation link : https://medium.com/@abhayemani8/llm-labs-149b8174bd33
+
+LLM_Labs_V2 : Current Version, All functions mentioned below 
+
 ```
 LLM_Labs_V1/
 │
