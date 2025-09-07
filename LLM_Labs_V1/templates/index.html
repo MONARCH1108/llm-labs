@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Labs - AI Model Comparison Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #333333 100%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chat-bubble {
+            animation: slideInUp 0.3s ease-out;
+        }
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .loading-dots {
+            display: inline-block;
+        }
+        .loading-dots:after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button.active {
+            background: #000000;
+            color: white;
+            border: 1px solid #333333;
+        }
+        .tab-button {
+            background: #f8f9fa;
+            color: #333333;
+            border: 1px solid #e9ecef;
+        }
+        .tab-button:hover {
+            background: #333333;
+            color: white;
+        }
+        
+        /* Input and form styling */
+        input[type="text"], textarea, select {
+            background: #f8f9fa;
+            border: 1px solid #333333;
+            color: #000000;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus {
+            ring-color: #000000;
+            border-color: #000000;
+        }
+        
+        /* Button styling */
+        .bg-blue-500 {
+            background-color: #000000 !important;
+        }
+        .bg-blue-500:hover {
+            background-color: #333333 !important;
+        }
+        .bg-green-500 {
+            background-color: #1a1a1a !important;
+        }
+        .bg-green-500:hover {
+            background-color: #333333 !important;
+        }
+        .bg-purple-500 {
+            background-color: #2d2d2d !important;
+        }
+        .bg-purple-500:hover {
+            background-color: #404040 !important;
+        }
+        .bg-gray-500 {
+            background-color: #666666 !important;
+        }
+        .bg-gray-500:hover {
+            background-color: #808080 !important;
+        }
+        
+        /* Chat message styling */
+        .chat-bubble.bg-blue-500 {
+            background-color: #000000 !important;
+            color: white;
+        }
+        .chat-bubble.bg-gray-100 {
+            background-color: #f8f9fa !important;
+            color: #000000;
+            border: 1px solid #333333;
+        }
+        .chat-bubble.bg-red-100 {
+            background-color: #ffe6e6 !important;
+            color: #cc0000;
+            border: 1px solid #ffcccc;
+        }
+        
+        /* Card and panel styling */
+        .bg-white {
+            background-color: #ffffff !important;
+            border: 1px solid #e9ecef;
+        }
+        .shadow-lg {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header styling */
+        h1, h2, h3 {
+            color: #ffffff;
+        }
+        .text-gray-800 {
+            color: #000000 !important;
+        }
+        .text-gray-700 {
+            color: #333333 !important;
+        }
+        .text-gray-600 {
+            color: #666666 !important;
+        }
+        .text-gray-500 {
+            color: #999999 !important;
+        }
+        
+        /* Link styling */
+        .text-blue-500 {
+            color: #000000 !important;
+        }
+        .text-blue-500:hover {
+            color: #333333 !important;
+        }
+        .text-green-500 {
+            color: #1a1a1a !important;
+        }
+        .text-green-500:hover {
+            color: #333333 !important;
+        }
+        
+        /* Border styling */
+        .border {
+            border-color: #e9ecef;
+        }
+        .border-gray-300 {
+            border-color: #dee2e6 !important;
+        }
+        .border-b {
+            border-bottom-color: #e9ecef;
+        }
+        
+        /* Background variations */
+        .bg-gray-50 {
+            background-color: #f8f9fa !important;
+        }
+        .bg-gray-100 {
+            background-color: #f1f3f4 !important;
+        }
+        
+        /* Modal styling */
+        #loading-modal .bg-white {
+            background-color: #ffffff !important;
+            border: 2px solid #333333;
+        }
+        #content-modal .bg-white {
+            background-color: #ffffff !important;
+            border: 2px solid #333333;
+        }
+        
+        /* Success/Error message styling */
+        .bg-green-100 {
+            background-color: #e8f5e8 !important;
+            border-color: #333333 !important;
+            color: #1a1a1a !important;
+        }
+        .bg-red-100 {
+            background-color: #ffe6e6 !important;
+            border-color: #cc0000 !important;
+            color: #cc0000 !important;
+        }
+        .bg-yellow-100 {
+            background-color: #fff4e6 !important;
+            border-color: #ff9900 !important;
+            color: #cc7a00 !important;
+        }
+        
+        /* Checkbox and form control styling */
+        input[type="checkbox"] {
+            accent-color: #000000;
+        }
+        
+        /* Scrollbar styling for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #000000;
+        }
+        
+        /* Custom animations for royal theme */
+        @keyframes crown-glow {
+            0%, 100% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+        }
+        
+        h1 {
+            animation: crown-glow 3s ease-in-out infinite;
+        }
+        
+        /* Hover effects */
+        .glass-effect:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg">
+    <!-- Quick Start Tour Overlay -->
+    <div id="tour-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-2xl p-8 max-w-lg mx-4 text-center">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800">
+                <i class="fas fa-rocket mr-2 text-blue-500"></i>Welcome to LLM Labs!
+            </h3>
+            <div id="tour-content">
+                <p class="text-gray-600 mb-6">Let's take a quick tour to get you started with AI model testing and comparison.</p>
+                <div class="flex justify-center space-x-4">
+                    <button onclick="startTour()" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-play mr-2"></i>Start Tour
+                    </button>
+                    <button onclick="skipTour()" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Skip Tour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-40 space-y-2"></div>
+
+    <!-- Help Button -->
+    <div class="fixed bottom-4 right-4 z-30">
+        <button onclick="showHelp()" class="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-colors" title="Get Help">
+            <i class="fas fa-question text-xl"></i>
+        </button>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                <i class="fas fa-robot mr-3"></i>LLM Labs
+            </h1>
+            <p class="text-xl text-white opacity-90">AI Model Comparison & Testing Platform</p>
+            <div class="mt-4 flex justify-center space-x-4 text-sm text-white opacity-75">
+                <span><i class="fas fa-check mr-1"></i>Multi-Provider Support</span>
+                <span><i class="fas fa-check mr-1"></i>Advanced Prompting</span>
+                <span><i class="fas fa-check mr-1"></i>Performance Analytics</span>
+            </div>
+        </div>
+
+        <!-- Status Indicator -->
+        <div id="connection-status" class="text-center mb-4">
+            <div class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm">
+                <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                <span>System Ready</span>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="glass-effect rounded-2xl p-8 max-w-6xl mx-auto">
+            <!-- Tab Navigation -->
+            <div class="flex mb-8 bg-gray-100 rounded-lg p-1">
+                <button class="tab-button flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-200 active" onclick="showTab('single-chat')">
+                    <i class="fas fa-comments mr-2"></i>Single LLM Chat
+                    <div class="text-xs opacity-75">Test individual models</div>
+                </button>
+                <button class="tab-button flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-200" onclick="showTab('comparative')">
+                    <i class="fas fa-chart-bar mr-2"></i>Comparative Evaluation
+                    <div class="text-xs opacity-75">Compare multiple models</div>
+                </button>
+            </div>
+
+            <!-- Single Chat Tab -->
+            <div id="single-chat" class="tab-content active">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Configuration Panel -->
+                    <div class="lg:col-span-1 bg-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-cog mr-2"></i>Configuration
+                        </h3>
+                        
+                        <!-- Provider Selection with Info -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Provider 
+                                <button onclick="showProviderInfo()" class="text-blue-500 hover:text-blue-700 ml-1">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                            </label>
+                            <select id="provider-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="groq">Groq (Fast inference)</option>
+                                <option value="gemini">Gemini (Google AI)</option>
+                                <option value="ollama">Ollama (Local models)</option>
+                            </select>
+                        </div>
+
+                        <!-- Model Input with Suggestions -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Model 
+                                <span class="text-xs text-gray-500">(Required)</span>
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="model-input" placeholder="e.g., llama3-8b-8192" 
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       oninput="showModelSuggestions(this.value)">
+                                <div id="model-suggestions" class="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 z-10 hidden max-h-40 overflow-y-auto"></div>
+                            </div>
+                            <div class="mt-2 flex space-x-2">
+                                <button id="show-models-btn" onclick="showAvailableModels()" class="text-blue-500 hover:text-blue-700 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>Show Available Models
+                                </button>
+                                <button onclick="validateModel()" class="text-green-500 hover:text-green-700 text-sm">
+                                    <i class="fas fa-check mr-1"></i>Validate
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Prompt Template with Preview -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Prompt Strategy 
+                                <button onclick="showPromptInfo()" class="text-blue-500 hover:text-blue-700 ml-1">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                            </label>
+                            <select id="prompt-template-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="showPromptPreview()">
+                            </select>
+                            <div id="prompt-preview" class="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600 hidden">
+                                <!-- Prompt preview will be shown here -->
+                            </div>
+                        </div>
+
+                        <!-- Persona Configuration (enhanced) -->
+                        <div id="persona-config" class="mb-4 border rounded-lg p-3 bg-gray-50" style="display: none;">
+                            <h4 class="font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user-cog mr-1"></i>Persona Settings
+                            </h4>
+                            <div class="space-y-2">
+                                <input type="text" id="persona-role" placeholder="Role (e.g., detective, teacher)" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg">
+                                <input type="text" id="persona-tone" placeholder="Tone (e.g., friendly, professional)" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg">
+                                <input type="text" id="persona-style" placeholder="Style (e.g., concise, detailed)" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg">
+                            </div>
+                            <div class="mt-2">
+                                <button onclick="usePresetPersona()" class="text-sm text-blue-500 hover:text-blue-700">
+                                    <i class="fas fa-magic mr-1"></i>Use Preset
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="mb-4 border rounded-lg p-3 bg-gray-50">
+                            <h4 class="font-medium text-gray-700 mb-2">
+                                <i class="fas fa-bolt mr-1"></i>Quick Actions
+                            </h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="loadExampleConfig()" class="text-sm px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                                    <i class="fas fa-download mr-1"></i>Load Example
+                                </button>
+                                <button onclick="saveCurrentConfig()" class="text-sm px-3 py-2 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors">
+                                    <i class="fas fa-save mr-1"></i>Save Config
+                                </button>
+                                <button onclick="resetConfiguration()" class="text-sm px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors">
+                                    <i class="fas fa-undo mr-1"></i>Reset
+                                </button>
+                                <button onclick="exportChat()" class="text-sm px-3 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors">
+                                    <i class="fas fa-file-export mr-1"></i>Export Chat
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Model Links -->
+                        <div id="model-links" class="text-sm text-gray-600">
+                            <div id="groq-link">
+                                <i class="fas fa-link mr-1"></i>
+                                <a href="https://console.groq.com/docs/models" target="_blank" class="text-blue-500 hover:underline">Groq Models</a>
+                            </div>
+                            <div id="gemini-link" style="display: none;">
+                                <i class="fas fa-link mr-1"></i>
+                                <a href="https://firebase.google.com/docs/ai-logic/models" target="_blank" class="text-blue-500 hover:underline">Gemini Models</a>
+                            </div>
+                            <div id="ollama-link" style="display: none;">
+                                <i class="fas fa-link mr-1"></i>
+                                <a href="https://ollama.com/library" target="_blank" class="text-blue-500 hover:underline">Ollama Library</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Interface -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-lg flex flex-col h-96">
+                        <div class="bg-gray-50 rounded-t-xl p-4 border-b flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    <i class="fas fa-comments mr-2"></i>Chat Interface
+                                </h3>
+                                <div id="chat-stats" class="text-xs text-gray-500 mt-1">
+                                    Messages: 0 | Tokens: ~0 | Response time: --
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="clearChat()" class="text-sm px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors" title="Clear Chat">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button onclick="toggleAutoScroll()" id="autoscroll-btn" class="text-sm px-3 py-1 bg-green-200 text-green-700 rounded hover:bg-green-300 transition-colors" title="Auto-scroll enabled">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                            <div id="empty-state" class="text-center text-gray-500 py-8">
+                                <i class="fas fa-robot text-4xl mb-2"></i>
+                                <p class="mb-2">Start a conversation with your AI assistant</p>
+                                <div class="flex justify-center space-x-2 mt-4">
+                                    <button onclick="insertSampleMessage('Hello, can you help me with coding?')" class="text-xs px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
+                                        Coding Help
+                                    </button>
+                                    <button onclick="insertSampleMessage('Explain quantum computing in simple terms')" class="text-xs px-3 py-1 bg-green-100 text-green-600 rounded hover:bg-green-200">
+                                        Explanation
+                                    </button>
+                                    <button onclick="insertSampleMessage('Write a creative story about AI')" class="text-xs px-3 py-1 bg-purple-100 text-purple-600 rounded hover:bg-purple-200">
+                                        Creative Writing
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat Input -->
+                        <div class="p-4 border-t bg-gray-50 rounded-b-xl">
+                            <div class="flex space-x-2">
+                                <div class="flex-1 relative">
+                                    <input type="text" id="chat-input" placeholder="Type your message here..." 
+                                           class="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                           onkeypress="handleChatKeyPress(event)" oninput="updateCharCount()">
+                                    <div id="char-count" class="absolute right-3 top-3 text-xs text-gray-400">0</div>
+                                </div>
+                                <button id="send-btn" onclick="sendMessage()" disabled
+                                        class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
+                                <span>Press Enter to send, Shift+Enter for new line</span>
+                                <span id="typing-indicator" class="hidden">
+                                    <i class="fas fa-robot mr-1"></i>AI is typing...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparative Evaluation Tab -->
+            <div id="comparative" class="tab-content">
+                <div class="space-y-6">
+                    <!-- Quick Setup Guide -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800">
+                        <h4 class="font-medium mb-2">
+                            <i class="fas fa-lightbulb mr-2"></i>Quick Setup Guide
+                        </h4>
+                        <ol class="text-sm space-y-1 ml-4">
+                            <li>1. Select providers and enter model names (comma-separated)</li>
+                            <li>2. Choose prompt strategies to test</li>
+                            <li>3. Enter your test question</li>
+                            <li>4. Run comparison and generate reports</li>
+                        </ol>
+                    </div>
+
+                    <!-- Provider Selection -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-server mr-2"></i>Select Providers & Models
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button onclick="selectAllProviders()" class="text-sm px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">
+                                    Select All
+                                </button>
+                                <button onclick="clearAllProviders()" class="text-sm px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">
+                                    Clear All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Groq -->
+                            <div class="border rounded-lg p-4 transition-all hover:shadow-md" id="groq-container">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="groq-provider" class="mr-2" onchange="toggleProviderContainer('groq')">
+                                        <label class="font-medium text-gray-700">Groq</label>
+                                    </div>
+                                    <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">Fast</span>
+                                </div>
+                                <textarea id="groq-models" placeholder="llama3-8b-8192,mixtral-8x7b-32768" 
+                                          class="w-full p-2 border border-gray-300 rounded-lg text-sm" rows="3"></textarea>
+                                <div class="flex justify-between items-center mt-2">
+                                    <a href="https://console.groq.com/docs/models" target="_blank" 
+                                       class="text-xs text-blue-500 hover:underline">View Models</a>
+                                    <button onclick="loadPopularModels('groq')" class="text-xs text-green-500 hover:underline">
+                                        Load Popular
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Gemini -->
+                            <div class="border rounded-lg p-4 transition-all hover:shadow-md" id="gemini-container">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="gemini-provider" class="mr-2" onchange="toggleProviderContainer('gemini')">
+                                        <label class="font-medium text-gray-700">Gemini</label>
+                                    </div>
+                                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Google</span>
+                                </div>
+                                <textarea id="gemini-models" placeholder="gemini-1.5-pro,gemini-2.0-flash" 
+                                          class="w-full p-2 border border-gray-300 rounded-lg text-sm" rows="3"></textarea>
+                                <div class="flex justify-between items-center mt-2">
+                                    <a href="https://firebase.google.com/docs/ai-logic/models" target="_blank" 
+                                       class="text-xs text-blue-500 hover:underline">View Models</a>
+                                    <button onclick="loadPopularModels('gemini')" class="text-xs text-green-500 hover:underline">
+                                        Load Popular
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Ollama -->
+                            <div class="border rounded-lg p-4 transition-all hover:shadow-md" id="ollama-container">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="ollama-provider" class="mr-2" onchange="toggleProviderContainer('ollama')">
+                                        <label class="font-medium text-gray-700">Ollama</label>
+                                    </div>
+                                    <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded">Local</span>
+                                </div>
+                                <textarea id="ollama-models" placeholder="llama3:latest,codellama:latest" 
+                                          class="w-full p-2 border border-gray-300 rounded-lg text-sm" rows="3"></textarea>
+                                <div class="flex space-x-2 mt-2">
+                                    <a href="https://ollama.com/library" target="_blank" 
+                                       class="text-xs text-blue-500 hover:underline">Library</a>
+                                    <button onclick="showLocalModels()" class="text-xs text-green-500 hover:underline">Local Models</button>
+                                    <button onclick="loadPopularModels('ollama')" class="text-xs text-green-500 hover:underline">
+                                        Load Popular
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Model Count Summary -->
+                        <div id="model-summary" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <span id="total-models">No models selected</span>
+                        </div>
+                    </div>
+
+                    <!-- Prompt Templates Selection -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-brain mr-2"></i>Select Prompt Strategies
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button onclick="selectRecommendedPrompts()" class="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                                    <i class="fas fa-star mr-1"></i>Recommended
+                                </button>
+                                <button onclick="selectAllPrompts()" class="text-sm px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">
+                                    Select All
+                                </button>
+                                <button onclick="clearAllPrompts()" class="text-sm px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">
+                                    Clear All
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="prompt-checkboxes">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                        <div id="prompt-summary" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <span id="selected-prompts">No prompt strategies selected</span>
+                        </div>
+                    </div>
+
+                    <!-- Test Question -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-question-circle mr-2"></i>Test Question
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button onclick="showSampleQuestions()" class="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                                    <i class="fas fa-lightbulb mr-1"></i>Samples
+                                </button>
+                                <button onclick="analyzeQuestion()" class="text-sm px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200">
+                                    <i class="fas fa-search mr-1"></i>Analyze
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="test-question" placeholder="Enter your question for comparison across all models..." 
+                                  class="w-full p-4 border border-gray-300 rounded-lg h-24 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  oninput="updateQuestionStats()"></textarea>
+                        <div id="question-stats" class="mt-2 flex justify-between text-xs text-gray-500">
+                            <span>Characters: 0 | Words: 0 | Estimated tokens: 0</span>
+                            <span id="question-complexity">Complexity: --</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="validateSetup()" 
+                                class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-check mr-2"></i>Validate Setup
+                        </button>
+                        <button id="run-comparison-btn" onclick="runComparison()" disabled
+                                class="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            <i class="fas fa-play mr-2"></i>Run Comparison
+                        </button>
+                        <button onclick="generateReport()" 
+                                class="px-8 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-chart-line mr-2"></i>Generate Report
+                        </button>
+                        <button onclick="viewLog()" 
+                                class="px-8 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-file-alt mr-2"></i>View Log
+                        </button>
+                        <button onclick="saveComparison()" 
+                                class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-save mr-2"></i>Save Setup
+                        </button>
+                    </div>
+
+                    <!-- Progress Indicator -->
+                    <div id="progress-container" class="bg-white rounded-xl p-6 shadow-lg" style="display: none;">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">
+                            <i class="fas fa-tasks mr-2"></i>Comparison Progress
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span id="progress-text">Initializing...</span>
+                                <span id="progress-percentage">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="progress-bar" class="bg-blue-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div id="current-task" class="text-xs text-gray-500">Ready to start</div>
+                        </div>
+                        <button onclick="cancelComparison()" class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                            <i class="fas fa-stop mr-1"></i>Cancel
+                        </button>
+                    </div>
+
+                    <!-- Results Area -->
+                    <div id="comparison-results" class="bg-white rounded-xl p-6 shadow-lg" style="display: none;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-chart-bar mr-2"></i>Comparison Results
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button onclick="shareResults()" class="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                                    <i class="fas fa-share mr-1"></i>Share
+                                </button>
+                                <button onclick="exportResults()" class="text-sm px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">
+                                    <i class="fas fa-download mr-1"></i>Export
+                                </button>
+                            </div>
+                        </div>
+                        <div id="results-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loading-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-lg p-8 text-center max-w-sm mx-4">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-lg font-medium mb-2">Processing<span class="loading-dots"></span></p>
+            <p id="loading-status" class="text-sm text-gray-600">Please wait...</p>
+            <div class="mt-4">
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="loading-progress" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for displaying content -->
+    <div id="content-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="display: none;">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-96 overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="modal-title" class="text-xl font-bold"></h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6 overflow-y-auto max-h-80"></div>
+            <div id="modal-actions" class="p-6 border-t bg-gray-50 hidden">
+                <!-- Dynamic action buttons will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let promptTemplates = {};
+        let chatHistory = [];
+        let autoScroll = true;
+        let comparisonCancelled = false;
+        let savedConfigs = [];
+        
+        // Enhanced model suggestions
+        const modelSuggestions = {
+            groq: ['llama3-8b-8192', 'llama3-70b-8192', 'mixtral-8x7b-32768', 'gemma-7b-it'],
+            gemini: ['gemini-1.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash'],
+            ollama: ['llama3:latest', 'codellama:latest', 'mistral:latest', 'dolphin-phi:latest']
+        };
+
+        // Sample questions for different categories
+        const sampleQuestions = {
+            coding: [
+                "Write a Python function to find the factorial of a number using recursion",
+                "Explain the difference between REST and GraphQL APIs",
+                "Create a simple web scraper using Beautiful Soup"
+            ],
+            reasoning: [
+                "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost?",
+                "If you're running a race and you pass the person in second place, what place are you in?",
+                "How would you measure the weight of a Boeing 747?"
+            ],
+            creative: [
+                "Write a short story about a robot learning to paint",
+                "Create a marketing slogan for a time travel agency",
+                "Describe a world where gravity works in reverse"
+            ],
+            analysis: [
+                "Compare the advantages and disadvantages of renewable energy sources",
+                "Analyze the potential impacts of artificial intelligence on employment",
+                "Explain the causes and effects of climate change"
+            ]
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPromptTemplates();
+            setupEventListeners();
+            showWelcomeTour();
+            initializeUI();
+        });
+
+        // Show welcome tour for first-time users
+        let hasSeenTour = false;
+        function showWelcomeTour() {
+            if (!hasSeenTour) {
+                document.getElementById('tour-overlay').style.display = 'flex';
+            }
+        }
+
+        // Start interactive tour
+        function startTour() {
+                hasSeenTour = true;
+                document.getElementById('tour-overlay').style.display = 'none';
+            
+            // Highlight different sections with explanations
+            const tourSteps = [
+                { element: '#provider-select', message: 'Choose your AI provider (Groq for speed, Gemini for quality, Ollama for privacy)' },
+                { element: '#model-input', message: 'Enter the specific model name you want to test' },
+                { element: '#prompt-template-select', message: 'Select different prompting strategies to optimize responses' },
+                { element: '.tab-button:nth-child(2)', message: 'Use Comparative Evaluation to test multiple models simultaneously' }
+            ];
+
+            showTourStep(0, tourSteps);
+        }
+
+        function showTourStep(step, steps) {
+            if (step >= steps.length) return;
+            
+            const currentStep = steps[step];
+            const element = document.querySelector(currentStep.element);
+            
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast(currentStep.message, 'info', 4000);
+                
+                setTimeout(() => {
+                    showTourStep(step + 1, steps);
+                }, 4000);
+            }
+        }
+
+        function skipTour() {
+            hasSeenTour = true;
+            document.getElementById('tour-overlay').style.display = 'none';
+        }
+
+        // Initialize UI components
+        function initializeUI() {
+            updateSendButtonState();
+            updateCharCount();
+            updateModelSummary();
+            updatePromptSummary();
+        }
+
+        // Enhanced toast notification system
+        function showToast(message, type = 'info', duration = 3000) {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-green-100 border-green-400 text-green-700',
+                error: 'bg-red-100 border-red-400 text-red-700',
+                warning: 'bg-yellow-100 border-yellow-400 text-yellow-700',
+                info: 'bg-blue-100 border-blue-400 text-blue-700'
+            };
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-triangle',
+                warning: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle'
+            };
+            
+            toast.className = `${colors[type]} border px-4 py-3 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="${icons[type]} mr-2"></i>
+                    <span class="text-sm">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-lg leading-none">&times;</button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // Load prompt templates
+        async function loadPromptTemplates() {
+            try {
+                const response = await fetch('/api/prompt-templates');
+                promptTemplates = await response.json();
+                populatePromptSelects();
+            } catch (error) {
+                console.error('Error loading prompt templates:', error);
+                showToast('Failed to load prompt templates', 'error');
+            }
+        }
+
+        // Enhanced prompt template population
+        function populatePromptSelects() {
+            const singleSelect = document.getElementById('prompt-template-select');
+            const checkboxContainer = document.getElementById('prompt-checkboxes');
+            
+            // Single chat dropdown
+            singleSelect.innerHTML = '';
+            Object.entries(promptTemplates).forEach(([id, template]) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = template.name;
+                singleSelect.appendChild(option);
+            });
+
+            // Comparative checkboxes with enhanced styling
+            checkboxContainer.innerHTML = '';
+            Object.entries(promptTemplates).forEach(([id, template]) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center p-3 border rounded-lg hover:shadow-md transition-all cursor-pointer';
+                div.innerHTML = `
+                    <input type="checkbox" id="prompt-${id}" value="${id}" class="mr-3" onchange="updatePromptSummary()">
+                    <div class="flex-1">
+                        <label for="prompt-${id}" class="text-sm font-medium cursor-pointer">${template.name}</label>
+                        <p class="text-xs text-gray-500 mt-1">${getPromptDescription(id)}</p>
+                    </div>
+                `;
+                checkboxContainer.appendChild(div);
+            });
+        }
+
+        // Get prompt descriptions
+        function getPromptDescription(id) {
+            const descriptions = {
+                "1": "Direct question without examples",
+                "2": "One example provided for context",
+                "3": "Multiple examples for better understanding",
+                "4": "Step-by-step reasoning approach",
+                "5": "Reasoning and acting iteratively",
+                "6": "Self-questioning methodology",
+                "7": "Multiple reasoning paths exploration",
+                "8": "Detailed instructions with constraints",
+                "9": "Role-based personalized responses"
+            };
+            return descriptions[id] || "Custom prompt strategy";
+        }
+
+        // Setup enhanced event listeners
+        function setupEventListeners() {
+            // Provider change handler
+            document.getElementById('provider-select').addEventListener('change', function() {
+                const provider = this.value;
+                document.querySelectorAll('[id$="-link"]').forEach(el => el.style.display = 'none');
+                document.getElementById(`${provider}-link`).style.display = 'block';
+                
+                // Clear model input when switching providers
+                document.getElementById('model-input').value = '';
+                updateSendButtonState();
+                showToast(`Switched to ${provider.charAt(0).toUpperCase() + provider.slice(1)} provider`, 'info');
+            });
+
+            // Prompt template change handler
+            document.getElementById('prompt-template-select').addEventListener('change', function() {
+                const isPersona = this.value === '9';
+                document.getElementById('persona-config').style.display = isPersona ? 'block' : 'none';
+                showPromptPreview();
+            });
+
+            // Model input validation
+            document.getElementById('model-input').addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    validateModel();
+                }
+            });
+
+            // Close model suggestions when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('#model-input') && !event.target.closest('#model-suggestions')) {
+                    hideModelSuggestions();
+                }
+            });
+        }
+
+        // Show model suggestions
+        function showModelSuggestions(value) {
+            const provider = document.getElementById('provider-select').value;
+            const suggestions = modelSuggestions[provider] || [];
+            const suggestionsDiv = document.getElementById('model-suggestions');
+            
+            if (value.length > 0 && suggestions.length > 0) {
+                const filtered = suggestions.filter(model => 
+                    model.toLowerCase().includes(value.toLowerCase())
+                );
+                
+                if (filtered.length > 0) {
+                    suggestionsDiv.innerHTML = filtered.map(model => `
+                        <div class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="selectModel('${model}')">
+                            ${model}
+                        </div>
+                    `).join('');
+                    suggestionsDiv.classList.remove('hidden');
+                } else {
+                    hideModelSuggestions();
+                }
+            } else {
+                hideModelSuggestions();
+            }
+            
+            updateSendButtonState();
+        }
+
+        function selectModel(model) {
+            document.getElementById('model-input').value = model;
+            hideModelSuggestions();
+            updateSendButtonState();
+            showToast(`Selected model: ${model}`, 'success');
+        }
+
+        function hideModelSuggestions() {
+            document.getElementById('model-suggestions').classList.add('hidden');
+        }
+
+        // Show prompt preview
+        function showPromptPreview() {
+            const selectedPrompt = document.getElementById('prompt-template-select').value;
+            const previewDiv = document.getElementById('prompt-preview');
+            
+            const previews = {
+                "1": "Direct approach: 'Answer the following question: [your question]'",
+                "2": "Example-guided: 'Here's an example... Now answer: [your question]'",
+                "3": "Multiple examples: 'Here are several examples... Now answer: [your question]'",
+                "4": "Step-by-step: 'Think through this step by step: [your question]'",
+                "5": "Iterative: 'Let me think and act on this: [your question]'",
+                "6": "Self-questioning: 'Let me ask myself sub-questions about: [your question]'",
+                "7": "Multiple paths: 'Let me explore different approaches to: [your question]'",
+                "8": "Structured: 'Follow these specific instructions for: [your question]'",
+                "9": "Role-based: 'As a [role], speaking in a [tone] and [style] manner: [your question]'"
+            };
+            
+            if (previews[selectedPrompt]) {
+                previewDiv.textContent = previews[selectedPrompt];
+                previewDiv.classList.remove('hidden');
+            } else {
+                previewDiv.classList.add('hidden');
+            }
+        }
+
+        // Validate model
+        async function validateModel() {
+            const provider = document.getElementById('provider-select').value;
+            const model = document.getElementById('model-input').value.trim();
+            
+            if (!model) {
+                showToast('Please enter a model name', 'warning');
+                return;
+            }
+            
+            showToast('Validating model...', 'info');
+            
+            // Simulate validation (in real app, this would check with the API)
+            setTimeout(() => {
+                showToast(`Model "${model}" appears valid for ${provider}`, 'success');
+            }, 1000);
+        }
+
+        // Update character count
+        function updateCharCount() {
+            const input = document.getElementById('chat-input');
+            const count = document.getElementById('char-count');
+            if (input && count && input.value) {
+                count.textContent = input.value.length;
+            } else if (count) {
+                count.textContent = '0';
+            }
+            updateSendButtonState();
+        }
+
+        // Update send button state
+        function updateSendButtonState() {
+            const sendBtn = document.getElementById('send-btn');
+            const input = document.getElementById('chat-input');
+            const model = document.getElementById('model-input');
+            
+            if (sendBtn && input && model) {
+                const hasMessage = input.value.trim().length > 0;
+                const hasModel = model.value.trim().length > 0;
+                sendBtn.disabled = !(hasMessage && hasModel);
+            }
+        }
+
+        // Insert sample message
+        function insertSampleMessage(message) {
+            document.getElementById('chat-input').value = message;
+            updateCharCount();
+            updateSendButtonState();
+        }
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+                el.style.opacity = '0';
+            });
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+
+            // Show the selected tab after a short delay for animation
+            setTimeout(() => {
+                const targetTab = document.getElementById(tabName);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                    targetTab.style.opacity = '1';
+                }
+            }, 150);
+
+            showToast(`Switched to ${tabName.replace('-', ' ').charAt(0).toUpperCase() + tabName.replace('-', ' ').slice(1)}`, 'info');
+        }
+
+        // Enhanced chat functions
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function clearChat() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = `
+                <div id="empty-state" class="text-center text-gray-500 py-8">
+                    <i class="fas fa-robot text-4xl mb-2"></i>
+                    <p class="mb-2">Start a conversation with your AI assistant</p>
+                    <div class="flex justify-center space-x-2 mt-4">
+                        <button onclick="insertSampleMessage('Hello, can you help me with coding?')" class="text-xs px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
+                            Coding Help
+                        </button>
+                        <button onclick="insertSampleMessage('Explain quantum computing in simple terms')" class="text-xs px-3 py-1 bg-green-100 text-green-600 rounded hover:bg-green-200">
+                            Explanation
+                        </button>
+                        <button onclick="insertSampleMessage('Write a creative story about AI')" class="text-xs px-3 py-1 bg-purple-100 text-purple-600 rounded hover:bg-purple-200">
+                            Creative Writing
+                        </button>
+                    </div>
+                </div>
+            `;
+            chatHistory = [];
+            updateChatStats();
+            showToast('Chat cleared', 'info');
+        }
+
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const btn = document.getElementById('autoscroll-btn');
+            if (autoScroll) {
+                btn.className = 'text-sm px-3 py-1 bg-green-200 text-green-700 rounded hover:bg-green-300 transition-colors';
+                btn.innerHTML = '<i class="fas fa-arrow-down"></i>';
+                btn.title = 'Auto-scroll enabled';
+            } else {
+                btn.className = 'text-sm px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors';
+                btn.innerHTML = '<i class="fas fa-pause"></i>';
+                btn.title = 'Auto-scroll disabled';
+            }
+        }
+
+        function updateChatStats() {
+            const stats = document.getElementById('chat-stats');
+            if (!stats || !chatHistory) return;
+
+            const messageCount = chatHistory.length || 0;
+            const tokenCount = chatHistory.reduce((sum, msg) => {
+                if (msg && msg.user) {
+                    return sum + Math.ceil(msg.user.length / 4);
+                }
+                return sum;
+            }, 0);
+            const avgResponseTime = messageCount > 0 ? 
+                chatHistory.reduce((sum, msg) => sum + (msg.responseTime || 0), 0) / messageCount : 0;
+
+            stats.textContent = `Messages: ${messageCount} | Tokens: ~${tokenCount} | Avg response: ${avgResponseTime.toFixed(1)}s`;
+        }
+
+        // Send message with enhanced features
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const provider = document.getElementById('provider-select').value;
+            const model = document.getElementById('model-input').value.trim();
+            const promptTemplate = document.getElementById('prompt-template-select').value;
+
+            if (!model) {
+                showToast('Please enter a model name', 'warning');
+                return;
+            }
+
+            const startTime = Date.now();
+            
+            // Add user message to chat
+            addMessageToChat(message, 'user');
+            input.value = '';
+            updateCharCount();
+
+            // Show typing indicator
+            showTypingIndicator(true);
+
+            // Show loading
+            const loadingId = addLoadingToChat();
+
+            try {
+                const payload = {
+                    provider: provider,
+                    model: model,
+                    question: message,
+                    prompt_template: promptTemplate
+                };
+
+                if (promptTemplate === '9') {
+                    payload.persona_config = {
+                        role: document.getElementById('persona-role').value || 'assistant',
+                        tone: document.getElementById('persona-tone').value || 'professional',
+                        style: document.getElementById('persona-style').value || 'clear and concise'
+                    };
+                }
+
+                const response = await fetch('/api/single-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const responseTime = (Date.now() - startTime) / 1000;
+                
+                removeLoadingFromChat(loadingId);
+                showTypingIndicator(false);
+
+                if (result.success) {
+                    addMessageToChat(result.response, 'assistant');
+                    
+                    // Store in chat history
+                    if (!chatHistory) {
+                        chatHistory = [];
+                    }
+                    chatHistory.push({
+                        user: message,
+                        assistant: result.response,
+                        provider: provider,
+                        model: model,
+                        promptTemplate: promptTemplate,
+                        responseTime: responseTime,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    updateChatStats();
+                    showToast(`Response received in ${responseTime.toFixed(1)}s`, 'success');
+                } else {
+                    addMessageToChat(`Error: ${result.error}`, 'error');
+                    showToast('Failed to get response', 'error');
+                }
+            } catch (error) {
+                removeLoadingFromChat(loadingId);
+                showTypingIndicator(false);
+                addMessageToChat(`Network error: ${error.message}`, 'error');
+                showToast('Network error occurred', 'error');
+            }
+        }
+
+        function showTypingIndicator(show) {
+            const indicator = document.getElementById('typing-indicator');
+            if (show) {
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.classList.add('hidden');
+            }
+        }
+
+        // Enhanced message addition with better UX
+        function addMessageToChat(message, type) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            messageDiv.className = `chat-bubble ${type === 'user' ? 'ml-auto bg-blue-500 text-white' : 
+                                    type === 'error' ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-gray-100'} 
+                                    max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative group`;
+            
+            if (type === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fas fa-user mr-2 mt-1"></i>
+                        <div class="flex-1">
+                            <div>${message}</div>
+                            <div class="text-xs opacity-70 mt-1">${timestamp}</div>
+                        </div>
+                    </div>
+                    <button onclick="copyMessage(this)" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                `;
+            } else if (type === 'error') {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle mr-2 mt-1"></i>
+                        <div class="flex-1">
+                            <div>${message}</div>
+                            <div class="text-xs opacity-70 mt-1">${timestamp}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="fas fa-robot mr-2 mt-1"></i>
+                        <div class="flex-1">
+                            <div>${message}</div>
+                            <div class="text-xs opacity-70 mt-1">${timestamp}</div>
+                        </div>
+                    </div>
+                    <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                        <button onclick="copyMessage(this)" class="text-xs hover:bg-gray-200 p-1 rounded" title="Copy">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button onclick="likeMessage(this)" class="text-xs hover:bg-gray-200 p-1 rounded" title="Like">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            
+            if (autoScroll) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Remove empty state
+            const emptyState = chatMessages.querySelector('#empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+        }
+
+        function copyMessage(button) {
+            const messageText = button.parentElement.parentElement.querySelector('div > div').textContent;
+            navigator.clipboard.writeText(messageText).then(() => {
+                showToast('Message copied to clipboard', 'success');
+            });
+        }
+
+        function likeMessage(button) {
+            button.innerHTML = '<i class="fas fa-heart text-red-500"></i>';
+            showToast('Thanks for your feedback!', 'success');
+        }
+
+        // Add loading with enhanced animation
+        function addLoadingToChat() {
+            const chatMessages = document.getElementById('chat-messages');
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'chat-bubble bg-gray-100 max-w-xs lg:max-w-md px-4 py-2 rounded-lg';
+            loadingDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-robot mr-2"></i>
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(loadingDiv);
+            if (autoScroll) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            return loadingId;
+        }
+
+        function removeLoadingFromChat(loadingId) {
+            const loadingDiv = document.getElementById(loadingId);
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // Enhanced comparative evaluation functions
+        function updateModelSummary() {
+            const providers = ['groq', 'gemini', 'ollama'];
+            let totalModels = 0;
+            const selectedProviders = [];
+            
+            providers.forEach(provider => {
+                const checkbox = document.getElementById(`${provider}-provider`);
+                const textarea = document.getElementById(`${provider}-models`);
+                
+                if (checkbox && checkbox.checked && textarea.value.trim()) {
+                    const models = textarea.value.split(',').map(m => m.trim()).filter(m => m);
+                    totalModels += models.length;
+                    selectedProviders.push(`${provider} (${models.length})`);
+                }
+            });
+            
+            const summaryElement = document.getElementById('total-models');
+            if (totalModels === 0) {
+                summaryElement.textContent = 'No models selected';
+            } else {
+                summaryElement.textContent = `${totalModels} models selected across ${selectedProviders.length} providers: ${selectedProviders.join(', ')}`;
+            }
+            
+            updateRunComparisonButton();
+        }
+
+        function updatePromptSummary() {
+            const checkboxes = document.querySelectorAll('#prompt-checkboxes input[type="checkbox"]:checked');
+            const summaryElement = document.getElementById('selected-prompts');
+            
+            if (checkboxes.length === 0) {
+                summaryElement.textContent = 'No prompt strategies selected';
+            } else {
+                const promptNames = Array.from(checkboxes).map(cb => {
+                    const label = document.querySelector(`label[for="${cb.id}"]`);
+                    return label ? label.textContent : cb.value;
+                });
+                summaryElement.textContent = `${checkboxes.length} strategies: ${promptNames.join(', ')}`;
+            }
+            
+            updateRunComparisonButton();
+        }
+
+        function updateRunComparisonButton() {
+            const runBtn = document.getElementById('run-comparison-btn');
+            const hasModels = document.getElementById('total-models').textContent !== 'No models selected';
+            const hasPrompts = document.getElementById('selected-prompts').textContent !== 'No prompt strategies selected';
+            const hasQuestion = document.getElementById('test-question').value.trim().length > 0;
+            
+            runBtn.disabled = !(hasModels && hasPrompts && hasQuestion);
+        }
+
+        function updateQuestionStats() {
+            const question = document.getElementById('test-question').value;
+            const chars = question.length;
+            const words = question.trim() ? question.trim().split(/\s+/).length : 0;
+            const tokens = Math.ceil(chars / 4);
+            
+            const statsElement = document.getElementById('question-stats');
+            statsElement.querySelector('span').textContent = `Characters: ${chars} | Words: ${words} | Estimated tokens: ${tokens}`;
+            
+            // Analyze complexity
+            const complexityElement = document.getElementById('question-complexity');
+            let complexity = 'Simple';
+            if (words > 50) complexity = 'Complex';
+            else if (words > 20) complexity = 'Medium';
+            
+            complexityElement.textContent = `Complexity: ${complexity}`;
+            updateRunComparisonButton();
+        }
+
+        // Provider selection helpers
+        function selectAllProviders() {
+            ['groq', 'gemini', 'ollama'].forEach(provider => {
+                document.getElementById(`${provider}-provider`).checked = true;
+                toggleProviderContainer(provider);
+            });
+            showToast('All providers selected', 'success');
+        }
+
+        function clearAllProviders() {
+            ['groq', 'gemini', 'ollama'].forEach(provider => {
+                document.getElementById(`${provider}-provider`).checked = false;
+                toggleProviderContainer(provider);
+            });
+            showToast('All providers cleared', 'info');
+        }
+
+        function toggleProviderContainer(provider) {
+            const container = document.getElementById(`${provider}-container`);
+            const checkbox = document.getElementById(`${provider}-provider`);
+            
+            if (checkbox.checked) {
+                container.classList.add('border-blue-300', 'bg-blue-50');
+            } else {
+                container.classList.remove('border-blue-300', 'bg-blue-50');
+            }
+            
+            updateModelSummary();
+        }
+
+        function loadPopularModels(provider) {
+            const textarea = document.getElementById(`${provider}-models`);
+            const popular = {
+                groq: 'llama3-8b-8192,mixtral-8x7b-32768',
+                gemini: 'gemini-1.5-pro,gemini-2.0-flash',
+                ollama: 'llama3:latest,codellama:latest'
+            };
+            
+            textarea.value = popular[provider] || '';
+            updateModelSummary();
+            showToast(`Popular ${provider} models loaded`, 'success');
+        }
+
+        // Prompt selection helpers
+        function selectRecommendedPrompts() {
+            // Select commonly effective prompts
+            const recommended = ['1', '4', '8']; // Zero-shot, Chain of Thought, Instruction+Constraints
+            
+            document.querySelectorAll('#prompt-checkboxes input[type="checkbox"]').forEach(cb => {
+                cb.checked = recommended.includes(cb.value);
+            });
+            
+            updatePromptSummary();
+            showToast('Recommended prompt strategies selected', 'success');
+        }
+
+        function selectAllPrompts() {
+            document.querySelectorAll('#prompt-checkboxes input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+            updatePromptSummary();
+            showToast('All prompt strategies selected', 'success');
+        }
+
+        function clearAllPrompts() {
+            document.querySelectorAll('#prompt-checkboxes input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            updatePromptSummary();
+            showToast('All prompt strategies cleared', 'info');
+        }
+
+        // Sample questions
+        function showSampleQuestions() {
+            let content = '<div class="space-y-4">';
+            
+            Object.entries(sampleQuestions).forEach(([category, questions]) => {
+                content += `
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2 capitalize">${category}</h4>
+                        <div class="space-y-2">
+                            ${questions.map(q => `
+                                <div class="flex items-start">
+                                    <button onclick="selectSampleQuestion('${q.replace(/'/g, "\\'")}')" 
+                                            class="text-blue-500 hover:text-blue-700 mr-2 mt-1">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <span class="text-sm">${q}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            content += '</div>';
+            showModal('Sample Questions', content);
+        }
+
+        function selectSampleQuestion(question) {
+            document.getElementById('test-question').value = question;
+            updateQuestionStats();
+            closeModal();
+            showToast('Sample question selected', 'success');
+        }
+
+        function analyzeQuestion() {
+            const question = document.getElementById('test-question').value.trim();
+            if (!question) {
+                showToast('Please enter a question first', 'warning');
+                return;
+            }
+            
+            const analysis = {
+                type: 'Unknown',
+                difficulty: 'Medium',
+                recommendedPrompts: []
+            };
+            
+            // Simple analysis logic
+            if (question.toLowerCase().includes('code') || question.toLowerCase().includes('program')) {
+                analysis.type = 'Coding';
+                analysis.recommendedPrompts = ['Chain of Thought', 'Instruction + Constraints'];
+            } else if (question.toLowerCase().includes('explain') || question.toLowerCase().includes('what is')) {
+                analysis.type = 'Explanation';
+                analysis.recommendedPrompts = ['Zero Shot', 'Few Shot'];
+            } else if (question.toLowerCase().includes('creative') || question.toLowerCase().includes('story')) {
+                analysis.type = 'Creative';
+                analysis.recommendedPrompts = ['Persona Based', 'Zero Shot'];
+            }
+            
+            const content = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-gray-50 rounded">
+                            <div class="text-sm text-gray-600">Question Type</div>
+                            <div class="font-medium">${analysis.type}</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded">
+                            <div class="text-sm text-gray-600">Difficulty</div>
+                            <div class="font-medium">${analysis.difficulty}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600 mb-2">Recommended Prompts</div>
+                        <div class="space-y-1">
+                            ${analysis.recommendedPrompts.map(prompt => `
+                                <div class="text-sm bg-blue-50 text-blue-800 px-2 py-1 rounded">${prompt}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showModal('Question Analysis', content);
+        }
+
+        // Validation and setup
+        function validateSetup() {
+            const issues = [];
+            
+            // Check providers
+            const hasProviders = ['groq', 'gemini', 'ollama'].some(provider => {
+                const checkbox = document.getElementById(`${provider}-provider`);
+                const textarea = document.getElementById(`${provider}-models`);
+                return checkbox.checked && textarea.value.trim();
+            });
+            
+            if (!hasProviders) {
+                issues.push('No providers or models selected');
+            }
+            
+            // Check prompts
+            const hasPrompts = document.querySelectorAll('#prompt-checkboxes input[type="checkbox"]:checked').length > 0;
+            if (!hasPrompts) {
+                issues.push('No prompt strategies selected');
+            }
+            
+            // Check question
+            const hasQuestion = document.getElementById('test-question').value.trim().length > 0;
+            if (!hasQuestion) {
+                issues.push('No test question provided');
+            }
+            
+            if (issues.length === 0) {
+                showToast('Setup validation passed!', 'success');
+                document.getElementById('run-comparison-btn').disabled = false;
+            } else {
+                showModal('Validation Issues', `
+                    <div class="space-y-2">
+                        <p class="text-red-600 mb-4">Please fix the following issues:</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            ${issues.map(issue => `<li class="text-sm">${issue}</li>`).join('')}
+                        </ul>
+                    </div>
+                `);
+            }
+        }
+
+        // Enhanced comparison with progress tracking
+        async function runComparison() {
+            const providers = {};
+            const promptTemplatesConfig = {};
+            const userInput = document.getElementById('test-question').value.trim();
+
+            // Collect provider data
+            ['groq', 'gemini', 'ollama'].forEach(provider => {
+                const checkbox = document.getElementById(`${provider}-provider`);
+                const modelsTextarea = document.getElementById(`${provider}-models`);
+
+                if (checkbox && checkbox.checked && modelsTextarea.value.trim()) {
+                    const models = modelsTextarea.value.split(',').map(m => m.trim()).filter(m => m);
+                    if (models.length > 0) {
+                        providers[provider] = models;
+                    }
+                }
+            });
+        
+            // Collect prompt templates
+            document.querySelectorAll('#prompt-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+                const templateId = checkbox.value;
+                if (templateId === '9') {
+                    const role = prompt('Enter persona role (e.g., detective):') || 'assistant';
+                    const tone = prompt('Enter tone (e.g., friendly, serious):') || 'professional';
+                    const style = prompt('Enter style (e.g., concise, detailed):') || 'clear and concise';
+                    promptTemplatesConfig[templateId] = { role, tone, style };
+                } else {
+                    promptTemplatesConfig[templateId] = {};
+                }
+            });
+        
+            // Show progress
+            showProgressContainer();
+            comparisonCancelled = false;
+
+            try {
+                const response = await fetch('/api/comparative-evaluation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        providers_models: providers,
+                        prompt_templates: promptTemplatesConfig,
+                        user_input: userInput
+                    })
+                });
+            
+                const result = await response.json();
+                hideProgressContainer();
+            
+                if (result.success) {
+                    showComparisonResults(result);
+                    showToast('Comparison completed successfully!', 'success');
+                } else {
+                    showComparisonError(result.error);
+                }
+            } catch (error) {
+                hideProgressContainer();
+                showComparisonError(error.message);
+            }
+        }
+
+        function showProgressContainer() {
+            const container = document.getElementById('progress-container');
+            container.style.display = 'block';
+            
+            // Simulate progress
+            let progress = 0;
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressPercentage = document.getElementById('progress-percentage');
+            const currentTask = document.getElementById('current-task');
+            
+            const tasks = [
+                'Initializing comparison...',
+                'Querying models...',
+                'Processing responses...',
+                'Analyzing results...',
+                'Generating report...'
+            ];
+            
+            const interval = setInterval(() => {
+                if (comparisonCancelled) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90; // Cap at 90% until real completion
+                
+                const taskIndex = Math.floor((progress / 100) * tasks.length);
+                currentTask.textContent = tasks[Math.min(taskIndex, tasks.length - 1)];
+                
+                progressBar.style.width = `${progress}%`;
+                progressPercentage.textContent = `${Math.floor(progress)}%`;
+                progressText.textContent = `Processing comparison...`;
+                
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+            }, 500);
+        }
+
+        function hideProgressContainer() {
+            document.getElementById('progress-container').style.display = 'none';
+            
+            // Complete the progress bar
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercentage = document.getElementById('progress-percentage');
+            progressBar.style.width = '100%';
+            progressPercentage.textContent = '100%';
+        }
+
+        function cancelComparison() {
+            comparisonCancelled = true;
+            hideProgressContainer();
+            showToast('Comparison cancelled', 'warning');
+        }
+
+        function showComparisonResults(result) {
+            document.getElementById('comparison-results').style.display = 'block';
+
+            let resultsHTML = `
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <div>
+                            <div class="font-medium">${result.message || 'Comparison completed successfully'}</div>
+                            <div class="text-sm mt-1">All models have been tested</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add summary statistics if available
+            if (result.summary) {
+                resultsHTML += `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 bg-blue-50 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-blue-600">${result.summary.total_tests || '--'}</div>
+                            <div class="text-sm text-blue-800">Total Tests</div>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-green-600">${result.summary.avg_response_time || '--'}s</div>
+                            <div class="text-sm text-green-800">Avg Response Time</div>
+                        </div>
+                        <div class="p-4 bg-purple-50 rounded-lg text-center">
+                            <div class="text-2xl font-bold text-purple-600">${result.summary.best_performer || '--'}</div>
+                            <div class="text-sm text-purple-800">Best Performer</div>
+                        </div>
+                    </div>
+                `;
+            }
+        
+            // Add detailed results if available
+            if (result.detailed_results && result.detailed_results.length > 0) {
+                resultsHTML += `
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-4 text-gray-800">
+                            <i class="fas fa-list mr-2"></i>Detailed Results
+                        </h4>
+                        <div class="space-y-4">
+                `;
+                        
+                result.detailed_results.forEach((testResult, index) => {
+                    resultsHTML += `
+                        <div class="border rounded-lg p-4 bg-gray-50">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h5 class="font-medium text-gray-800">${testResult.provider} - ${testResult.model}</h5>
+                                    <div class="text-sm text-gray-600">Prompt: ${testResult.prompt_strategy}</div>
+                                </div>
+                                <div class="text-right text-sm text-gray-500">
+                                    <div>Time: ${testResult.response_time || 'N/A'}s</div>
+                                    <div>Status: ${testResult.success ? '✅ Success' : '❌ Failed'}</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded p-3 border-l-4 border-blue-400">
+                                <div class="text-sm font-medium text-gray-700 mb-1">Question:</div>
+                                <div class="text-sm text-gray-600 mb-3">${testResult.question}</div>
+
+                                <div class="text-sm font-medium text-gray-700 mb-1">Response:</div>
+                                <div class="text-sm text-gray-800 whitespace-pre-wrap">${testResult.response || testResult.error || 'No response'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            
+                resultsHTML += `
+                        </div>
+                    </div>
+                `;
+            }
+        
+            // Action buttons
+            resultsHTML += `
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="generateReport()" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                        <i class="fas fa-chart-line mr-1"></i>Generate Report
+                    </button>
+                    <button onclick="viewLog()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                        <i class="fas fa-file-alt mr-1"></i>View Log
+                    </button>
+                    <button onclick="exportResults()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        <i class="fas fa-download mr-1"></i>Export Results
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('results-content').innerHTML = resultsHTML;
+        }
+
+        function showComparisonError(error) {
+            document.getElementById('comparison-results').style.display = 'block';
+            document.getElementById('results-content').innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <div>
+                            <div class="font-medium">Comparison Failed</div>
+                            <div class="text-sm mt-1">${error}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showToast('Comparison failed', 'error');
+        }
+
+        // Configuration management
+        function loadExampleConfig() {
+            const example = {
+                provider: 'groq',
+                model: 'llama3-8b-8192',
+                promptTemplate: '4' // Chain of Thought
+            };
+            
+            document.getElementById('provider-select').value = example.provider;
+            document.getElementById('model-input').value = example.model;
+            document.getElementById('prompt-template-select').value = example.promptTemplate;
+            
+            // Trigger change events
+            document.getElementById('provider-select').dispatchEvent(new Event('change'));
+            document.getElementById('prompt-template-select').dispatchEvent(new Event('change'));
+            
+            showToast('Example configuration loaded', 'success');
+        }
+
+        function saveCurrentConfig() {
+            const config = {
+                id: Date.now(),
+                name: prompt('Enter configuration name:') || 'Unnamed Config',
+                provider: document.getElementById('provider-select').value,
+                model: document.getElementById('model-input').value,
+                promptTemplate: document.getElementById('prompt-template-select').value,
+                timestamp: new Date().toISOString()
+            };
+    
+            savedConfigs.push(config);
+            showToast('Configuration saved', 'success');
+        }
+
+        function resetConfiguration() {
+            if (confirm('Reset all configuration settings?')) {
+                document.getElementById('provider-select').value = 'groq';
+                document.getElementById('model-input').value = '';
+                document.getElementById('prompt-template-select').value = '1';
+                document.getElementById('persona-config').style.display = 'none';
+                
+                // Clear persona fields
+                document.getElementById('persona-role').value = '';
+                document.getElementById('persona-tone').value = '';
+                document.getElementById('persona-style').value = '';
+                
+                showToast('Configuration reset', 'info');
+            }
+        }
+
+        function exportChat() {
+            if (chatHistory.length === 0) {
+                showToast('No chat history to export', 'warning');
+                return;
+            }
+            
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                chatHistory: chatHistory,
+                configuration: {
+                    provider: document.getElementById('provider-select').value,
+                    model: document.getElementById('model-input').value,
+                    promptTemplate: document.getElementById('prompt-template-select').value
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `llm-chat-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Chat exported successfully', 'success');
+        }
+
+        // Persona presets
+        function usePresetPersona() {
+            const presets = {
+                'Creative Writer': { role: 'creative writer', tone: 'inspiring', style: 'vivid and imaginative' },
+                'Technical Expert': { role: 'technical expert', tone: 'professional', style: 'precise and detailed' },
+                'Friendly Teacher': { role: 'teacher', tone: 'encouraging', style: 'clear and patient' },
+                'Business Advisor': { role: 'business consultant', tone: 'confident', style: 'strategic and practical' }
+            };
+            
+            let content = '<div class="space-y-3">';
+            Object.entries(presets).forEach(([name, preset]) => {
+                content += `
+                    <button onclick="selectPresetPersona('${preset.role}', '${preset.tone}', '${preset.style}')" 
+                            class="w-full p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="font-medium">${name}</div>
+                        <div class="text-sm text-gray-600">${preset.role} • ${preset.tone} • ${preset.style}</div>
+                    </button>
+                `;
+            });
+            content += '</div>';
+            
+            showModal('Persona Presets', content);
+        }
+
+        function selectPresetPersona(role, tone, style) {
+            document.getElementById('persona-role').value = role;
+            document.getElementById('persona-tone').value = tone;
+            document.getElementById('persona-style').value = style;
+            closeModal();
+            showToast('Persona preset applied', 'success');
+        }
+
+        // Help and information functions
+        function showHelp() {
+            const helpContent = `
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">Getting Started</h4>
+                        <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                            <li>Choose a provider (Groq for speed, Gemini for quality, Ollama for local)</li>
+                            <li>Enter a model name or use suggestions</li>
+                            <li>Select a prompt strategy that fits your use case</li>
+                            <li>Start chatting or run comparative evaluations</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">Prompt Strategies</h4>
+                        <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                            <li><strong>Zero Shot:</strong> Direct questions without examples</li>
+                            <li><strong>Chain of Thought:</strong> Step-by-step reasoning</li>
+                            <li><strong>Few Shot:</strong> Learning from multiple examples</li>
+                            <li><strong>Persona Based:</strong> Role-playing for specific contexts</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">Tips for Better Results</h4>
+                        <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                            <li>Be specific and clear in your questions</li>
+                            <li>Use Chain of Thought for complex reasoning tasks</li>
+                            <li>Try different models to compare performance</li>
+                            <li>Export your chats for future reference</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            showModal('Help & Guide', helpContent);
+        }
+
+        function showProviderInfo() {
+            const providerInfo = `
+                <div class="space-y-4">
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Groq</h4>
+                        <p class="text-sm text-gray-600 mb-2">Ultra-fast inference with specialized hardware</p>
+                        <ul class="text-xs text-gray-500 space-y-1 list-disc list-inside">
+                            <li>Optimized for speed and low latency</li>
+                            <li>Best for real-time applications</li>
+                            <li>Limited model selection</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Gemini</h4>
+                        <p class="text-sm text-gray-600 mb-2">Google's advanced AI models with strong reasoning</p>
+                        <ul class="text-xs text-gray-500 space-y-1 list-disc list-inside">
+                            <li>High quality responses</li>
+                            <li>Strong multimodal capabilities</li>
+                            <li>Integrated with Google services</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Ollama</h4>
+                        <p class="text-sm text-gray-600 mb-2">Run models locally for privacy and control</p>
+                        <ul class="text-xs text-gray-500 space-y-1 list-disc list-inside">
+                            <li>Complete privacy and control</li>
+                            <li>No internet required after setup</li>
+                            <li>Customizable and open source</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            showModal('Provider Information', providerInfo);
+        }
+
+        function showPromptInfo() {
+            const promptInfo = `
+                <div class="space-y-4">
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Zero Shot</h4>
+                        <p class="text-sm text-gray-600">Ask questions directly without examples. Best for simple, clear tasks.</p>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Chain of Thought</h4>
+                        <p class="text-sm text-gray-600">Encourages step-by-step reasoning. Excellent for complex problem-solving.</p>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Few Shot</h4>
+                        <p class="text-sm text-gray-600">Provides examples to guide the model. Great for specific formats or styles.</p>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4">
+                        <h4 class="font-medium text-gray-800 mb-2">Persona Based</h4>
+                        <p class="text-sm text-gray-600">The AI adopts a specific role and communication style.</p>
+                    </div>
+                </div>
+            `;
+            
+            showModal('Prompt Strategies', promptInfo);
+        }
+
+        // Show available models for current provider
+        async function showAvailableModels() {
+            const provider = document.getElementById('provider-select').value;
+            showLoadingModal('Loading available models...');
+            
+            try {
+                if (provider === 'ollama') {
+                    const response = await fetch('/api/ollama-models');
+                    const result = await response.json();
+                    
+                    hideLoadingModal();
+                    
+                    if (result.success) {
+                        const models = result.models.split('\n').filter(line => line.trim() && !line.startsWith('NAME'));
+                        const modelList = models.map(line => {
+                            const parts = line.split(/\s+/);
+                            return parts[0];
+                        }).filter(model => model).join('\n');
+                        
+                        showModal('Available Ollama Models', `
+                            <div class="space-y-2">
+                                <p class="text-sm text-gray-600 mb-4">Locally installed models:</p>
+                                <pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto">${modelList || 'No models installed'}</pre>
+                                <div class="mt-4">
+                                    <a href="https://ollama.com/library" target="_blank" class="text-blue-500 hover:underline text-sm">
+                                        <i class="fas fa-external-link-alt mr-1"></i>Browse Ollama Library
+                                    </a>
+                                </div>
+                            </div>
+                        `);
+                    } else {
+                        showModal('Error', `<p class="text-red-600">${result.error}</p>`);
+                    }
+                } else {
+                    // For non-Ollama providers, fetch from API or show suggestions
+                    hideLoadingModal();
+
+                    if (provider === 'groq' || provider === 'gemini') {
+                        const suggestions = modelSuggestions[provider] || [];
+                        showModal(`Available ${provider.charAt(0).toUpperCase() + provider.slice(1)} Models`, `
+                            <div class="space-y-2">
+                                <p class="text-sm text-gray-600 mb-4">Popular models for ${provider}:</p>
+                                <div class="grid gap-2">
+                                    ${suggestions.map(model => `
+                                        <button onclick="selectModel('${model}')" 
+                                                class="p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors">
+                                            <div class="font-medium">${model}</div>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `);
+                    }
+                }
+            } catch (error) {
+                hideLoadingModal();
+                showToast('Failed to load models', 'error');
+            }
+        }
+
+        function showLocalModels() {
+            fetch('/api/ollama-models')
+                .then(response => response.json())
+                .then(result => {
+                    hideLoadingModal();
+
+                    if (result.success) {
+                        const modelList = result.parsed_models || [];
+
+                        if (modelList.length > 0) {
+                            showModal('Local Ollama Models', `
+                                <div class="space-y-2">
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        Found ${modelList.length} locally installed models on your system:
+                                    </p>
+                                    <div class="grid gap-2">
+                                        ${modelList.map(model => `
+                                            <button onclick="selectLocalModel('${model}')" 
+                                                    class="p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors">
+                                                <div class="font-medium">${model}</div>
+                                                <div class="text-xs text-gray-500">Local Ollama model</div>
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                    <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                                        <p class="text-xs text-blue-700">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            These are models installed locally via: <code>ollama pull model-name</code>
+                                        </p>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button onclick="checkOllamaStatus()" class="text-sm text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-heartbeat mr-1"></i>Check Ollama Status
+                                        </button>
+                                    </div>
+                                </div>
+                            `);
+                        } else {
+                            showModal('No Local Models Found', `
+                                <div class="space-y-4">
+                                    <p class="text-sm text-gray-600">No local models found on your system.</p>
+                                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <h4 class="font-medium text-yellow-800 mb-2">To install local models:</h4>
+                                        <ol class="text-sm text-yellow-700 space-y-1 list-decimal list-inside">
+                                            <li>Make sure Ollama is installed and running</li>
+                                            <li>Open terminal/command prompt</li>
+                                            <li>Run: <code class="bg-yellow-100 px-2 py-1 rounded">ollama pull llama3.2</code></li>
+                                            <li>Or: <code class="bg-yellow-100 px-2 py-1 rounded">ollama pull codellama</code></li>
+                                        </ol>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button onclick="checkOllamaStatus()" class="text-sm text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-heartbeat mr-1"></i>Check if Ollama is Running
+                                        </button>
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    } else {
+                        showModal('Error Loading Local Models', `
+                            <div class="space-y-4">
+                                <p class="text-red-600">${result.error}</p>
+                                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <h4 class="font-medium text-red-800 mb-2">Troubleshooting:</h4>
+                                    <ul class="text-sm text-red-700 space-y-1 list-disc list-inside">
+                                        <li>Install Ollama from <a href="https://ollama.com" target="_blank" class="text-blue-600 hover:underline">ollama.com</a></li>
+                                        <li>Start Ollama service</li>
+                                        <li>Run <code class="bg-red-100 px-1 rounded">ollama serve</code> in terminal</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `);
+                    }
+                })
+            }
+
+        // Report and logging functions
+        async function generateReport() {
+            const question = document.getElementById('test-question').value.trim();
+            if (!question) {
+                showToast('Please enter a test question first', 'warning');
+                return;
+            }
+            
+            showLoadingModal('Generating performance report...');
+            
+            try {
+                const response = await fetch('/api/generate-report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_question: question
+                    })
+                });
+                
+                const result = await response.json();
+                hideLoadingModal();
+                
+                if (result.success) {
+                    showToast('Report generated successfully!', 'success');
+                    // Offer to download the report
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = `/api/download-report/${result.report_path}`;
+                    downloadLink.download = result.report_path;
+                    downloadLink.click();
+                } else {
+                    showToast(`Failed to generate report: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                hideLoadingModal();
+                showToast('Error generating report', 'error');
+            }
+        }
+
+        async function viewLog() {
+            showLoadingModal('Loading comparison log...');
+            
+            try {
+                const response = await fetch('/api/get-log');
+                const result = await response.json();
+                hideLoadingModal();
+                
+                if (result.success) {
+                    showModal('Comparison Log', `
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Log entries</span>
+                                <button onclick="downloadLog()" class="text-blue-500 hover:text-blue-700 text-sm">
+                                    <i class="fas fa-download mr-1"></i>Download
+                                </button>
+                            </div>
+                            <pre class="bg-gray-100 p-4 rounded text-sm overflow-y-auto max-h-96">${result.log_content || 'No log entries found'}</pre>
+                        </div>
+                    `);
+                } else {
+                    showModal('Error', `<p class="text-red-600">Failed to load log: ${result.error}</p>`);
+                }
+            } catch (error) {
+                hideLoadingModal();
+                showToast('Error loading log', 'error');
+            }
+        }
+
+        function downloadLog() {
+            fetch('/api/get-log')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const blob = new Blob([result.log_content], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'llm_comparison.log';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showToast('Log downloaded', 'success');
+                    }
+                })
+                .catch(() => showToast('Failed to download log', 'error'));
+        }
+
+        // Save and share functions
+        let savedSetups = []; // Add this at the top with other variables
+        function saveComparison() {
+            const config = {
+                providers: {},
+                prompts: [],
+                question: document.getElementById('test-question').value,
+                timestamp: new Date().toISOString()
+            };
+            // Collect provider data
+            ['groq', 'gemini', 'ollama'].forEach(provider => {
+                const checkbox = document.getElementById(`${provider}-provider`);
+                const textarea = document.getElementById(`${provider}-models`);
+                if (checkbox.checked && textarea.value.trim()) {
+                    config.providers[provider] = textarea.value.split(',').map(m => m.trim());
+                }
+            });
+            // Collect selected prompts
+            document.querySelectorAll('#prompt-checkboxes input[type="checkbox"]:checked').forEach(cb => {
+                config.prompts.push(cb.value);
+            });
+            const name = prompt('Enter setup name:') || 'Unnamed Setup';
+            savedSetups.push({ id: Date.now(), name, config });
+            showToast('Setup saved successfully', 'success');
+        }
+
+        function shareResults() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'LLM Labs Comparison Results',
+                    text: 'Check out these AI model comparison results',
+                    url: url
+                });
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('Results URL copied to clipboard', 'success');
+                });
+            }
+        }
+
+        function exportResults() {
+            const resultsData = {
+                timestamp: new Date().toISOString(),
+                question: document.getElementById('test-question').value,
+                results: 'Results would be extracted from comparison data',
+                configuration: {
+                    providers: {},
+                    prompts: []
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(resultsData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `llm-results-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Results exported', 'success');
+        }
+
+        // Modal functions
+        function showModal(title, content) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').innerHTML = content;
+            document.getElementById('content-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('content-modal').style.display = 'none';
+        }
+
+        function showLoadingModal(message) {
+            document.getElementById('loading-status').textContent = message;
+            document.getElementById('loading-modal').style.display = 'flex';
+        }
+
+        function hideLoadingModal() {
+            document.getElementById('loading-modal').style.display = 'none';
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', function() {
+            // Set default provider link visibility
+            document.getElementById('provider-select').dispatchEvent(new Event('change'));
+
+            // Initialize saved configurations (no localStorage)
+            if (savedConfigs.length > 0) {
+                console.log('Loaded', savedConfigs.length, 'saved configurations');
+            }
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('fixed') && event.target.classList.contains('inset-0')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
