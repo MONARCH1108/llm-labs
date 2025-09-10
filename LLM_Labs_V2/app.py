@@ -4,11 +4,10 @@ from utils.prompts import (
     zero_shot_prompt, one_shot_prompt, few_shot_prompt,
     chain_of_thought_prompt, react_prompt, self_ask_prompt,
     tree_of_thought_prompt, instruction_constraints_prompt,
-    persona_based_prompt_template
+    persona_based_prompt_template, custom_prompt
 )
 from utils.comparison import run_comparative_evaluation
 from utils.report_generator import extract_log_metrics, generate_report
-
 
 def select_prompt_templates():
     print("\nChoose Prompting Strategies (comma-separated numbers):")
@@ -21,10 +20,18 @@ def select_prompt_templates():
         "6": self_ask_prompt,
         "7": tree_of_thought_prompt,
         "8": instruction_constraints_prompt,
-        "9": persona_based_prompt_template
+        "9": persona_based_prompt_template,
+        "10": custom_prompt
     }
     for key, fn in prompt_mapping.items():
-        print(f"{key}. {fn.__name__.replace('_', ' ').title()}")
+        # nicer display for persona and custom
+        if key == "9":
+            label = "Persona-based Prompt (dynamic)"
+        elif key == "10":
+            label = "Custom Prompt (type your own)"
+        else:
+            label = fn.__name__.replace('_', ' ').title()
+        print(f"{key}. {label}")
 
     choices = input("Enter prompt numbers (e.g., 1,3,6): ").strip().split(',')
     prompt_templates = {}
@@ -36,12 +43,18 @@ def select_prompt_templates():
             tone = input("Enter tone (e.g., friendly, serious): ").strip()
             style = input("Enter style (e.g., concise, detailed): ").strip()
             prompt_templates[f"persona_{role}_{tone}_{style}"] = persona_based_prompt_template(role, tone, style)
+        elif choice == "10":
+            # interactive custom prompt entry
+            print("Type your custom prompt. When finished, type a new line containing only: END")
+            cp = custom_prompt()  # interactive mode
+            # use sequential key (or let user supply a name if you prefer)
+            prompt_templates[f"custom_prompt_{len(prompt_templates)+1}"] = cp
         elif choice in prompt_mapping:
             fn = prompt_mapping[choice]
+            # persona and custom were handled above; others are zero-arg functions
             prompt_templates[fn.__name__] = fn()
 
     return prompt_templates
-
 
 def run_comparative():
     print("\n🔍 Comparative LLM Evaluation")

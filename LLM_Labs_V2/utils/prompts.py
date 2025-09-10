@@ -178,3 +178,18 @@ def persona_based_prompt_template(role: str, tone: str = "professional", style: 
         "Respond to the following input while fully embracing your role:"
     )
 
+def custom_prompt(provided_text=None):
+    if provided_text:
+        return provided_text.strip()
+
+    print("\nEnter your custom prompt. Finish by typing a single line with: END")
+    lines = []
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            break
+        if line.strip() == "END":
+            break
+        lines.append(line)
+    return "\n".join(lines).strip()
