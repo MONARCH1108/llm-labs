@@ -48,7 +48,8 @@ LLM_Labs_V1/
 │   │   ├─ self_ask_prompt() -> str
 │   │   ├─ tree_of_thought_prompt() -> str
 │   │   ├─ instruction_constraints_prompt() -> str
-│   │   └─ persona_based_prompt_template(role: str, tone: str = "professional", style: str = "clear and concise") -> str
+│   │   ├─ persona_based_prompt_template(role: str, tone: str = "professional", style: str = "clear and concise") -> str
+|   |   └─ custom_prompt() -> str
 │   │
 │   └─ report_generator.py
 │       ├─ safe_float(value: str)
