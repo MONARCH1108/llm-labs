@@ -178,7 +178,7 @@ def persona_based_prompt_template(role: str, tone: str = "professional", style: 
         "Respond to the following input while fully embracing your role:"
     )
 
-def custom_prompt(provided_text=None):
+def custom_prompt(provided_text=None) -> str:
     if provided_text:
         return provided_text.strip()
 
