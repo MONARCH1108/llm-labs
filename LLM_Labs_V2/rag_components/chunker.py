@@ -1,7 +1,6 @@
 from langchain.text_splitter import TokenTextSplitter
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_experimental.text_splitter import SemanticChunker
 
 def token_chunker(text: str, chunk_size: int = 256, chunk_overlap: int = 20):
     splitter = TokenTextSplitter(
@@ -42,10 +41,4 @@ def sentence_chunker(text: str, chunk_size: int = 500, chunk_overlap: int = 50, 
     )
     return splitter.split_text(text)
 
-def semantic_chunker(text: str, chunk_size: int = 500, chunk_overlap: int = 50, embedding_model=None):
-    splitter = SemanticChunker(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        embedding_model=embedding_model
-    )
-    return splitter.split_text(text)
+

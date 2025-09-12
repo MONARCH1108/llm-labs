@@ -9,6 +9,9 @@ from utils.prompts import (
 from utils.comparison import run_comparative_evaluation
 from utils.report_generator import extract_log_metrics, generate_report
 
+from rag_components.doc_loader import load_document
+from rag_components import chunker
+
 def select_prompt_templates():
     print("\nChoose Prompting Strategies (comma-separated numbers):")
     prompt_mapping = {
@@ -149,17 +152,69 @@ def run_single_llm_chat():
         print(response)
         print("\n----------------------\n")
 
+def rag_strategy():
+    print("\n📄 RAG Document Chunking Strategy")
+    file_path = input("Enter document path (pdf, docx, txt): ").strip()
+
+    try:
+        text = load_document(file_path)
+        print(f"\nDocument loaded successfully. Length: {len(text)} characters.\n")
+    except Exception as e:
+        print(f"⚠️ Error loading document: {e}")
+        return
+    
+    strategies = {
+        "1": ("Token-based", chunker.token_chunker),
+        "2": ("Tiktoken-based", chunker.tiktoken_chunker),
+        "3": ("Character-based", chunker.char_chunker),
+        "4": ("Recursive Character", chunker.recursive_char_chunker),
+        "5": ("Sentence-based", chunker.sentence_chunker),
+    }
+
+    print("Select a chunking strategy:")
+    for key, (name, _) in strategies.items():
+        print(f"{key}. {name}")
+    choice = input("\nEnter choice number: ").strip()
+
+    if choice not in strategies:
+        print("❌ Invalid choice!")
+        return
+    strategy_name, strategy_func = strategies[choice]
+
+    try:
+        chunk_size = int(input("Enter chunk size (default 500): ") or 500)
+        chunk_overlap = int(input("Enter chunk overlap (default 50): ") or 50)
+    except ValueError:
+        print("⚠️ Invalid input, using default values.")
+        chunk_size, chunk_overlap = 500, 50
+
+    try:
+        chunks = strategy_func(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    except Exception as e:
+        print(f"⚠️ Error during chunking: {e}")
+        return
+    
+    print(f"\n--- {strategy_name} Chunks ({len(chunks)} chunks) ---")
+    for i, chunk in enumerate(chunks, 1):
+        print(f"\n[{i}]: {chunk}")
+
+
 def main():
-    print("\nChoose Mode:\n1. Single LLM Chat\n2. Comparative Evaluation (Multiple Providers)")
-    mode = input("Enter 1 or 2: ").strip()
+    print("\nChoose Mode:")
+    print("1. Single LLM Chat")
+    print("2. Comparative Evaluation (Multiple Providers)")
+    print("3. RAG Document Chunking")
+
+    mode = input("Enter 1, 2, or 3: ").strip()
 
     if mode == "1":
         run_single_llm_chat()
     elif mode == "2":
         run_comparative()
+    elif mode == "3":
+        rag_strategy()
     else:
         print("❌ Invalid mode selection.")
-
 
 if __name__ == "__main__":
     main()
