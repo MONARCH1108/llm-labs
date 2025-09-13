@@ -11,7 +11,7 @@ from utils.report_generator import extract_log_metrics, generate_report
 
 from rag_components.doc_loader import load_document
 from rag_components import chunker
-from rag_components.embedding_model import AVAILABLE_MODELS, embed_chunks
+from rag_components.embedding_model import AVAILABLE_MODELS, embed_chunks, compare_embeddings
 
 def select_prompt_templates():
     print("\nChoose Prompting Strategies (comma-separated numbers):")
@@ -199,7 +199,7 @@ def rag_strategy():
     for i, chunk in enumerate(chunks, 1):
         print(f"\n[{i}]: {chunk}")
 
-    # 🔹 NEW: Ask user for embedding model
+    # 🔹 Ask user for embedding model
     print("\n🔹 Available Embedding Models:")
     for i, model in enumerate(AVAILABLE_MODELS, 1):
         print(f"{i}. {model}")
@@ -214,9 +214,24 @@ def rag_strategy():
     print(f"\n⚡ Generating embeddings using: {model_name}")
     vectors = embed_chunks(chunks, model_name)
 
+    if not vectors:
+        print("❌ Embedding failed. Exiting.")
+        return
+
     print(f"\n✅ Generated {len(vectors)} embeddings.")
     print(f"Example vector length: {len(vectors[0])}")
     print(f"First 10 values of first vector: {vectors[0][:10]}")
+
+    # 🔹 Retrieval evaluation
+    query = input("\n🔍 Enter a query for retrieval testing: ").strip()
+    results = compare_embeddings(query, chunks, vectors, model_name)
+
+    print("\n📊 Retrieval Results (Top 3):")
+    for r in results[:3]:
+        print(f"Chunk: {r['chunk'][:80]}...")
+        print(f" Cosine: {r['cosine']:.4f} | Euclidean: {r['euclidean']:.4f} | Dot: {r['dot']:.4f}\n")
+
+    return results
 
 def main():
     print("\nChoose Mode:")
