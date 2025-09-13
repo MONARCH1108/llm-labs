@@ -11,6 +11,7 @@ from utils.report_generator import extract_log_metrics, generate_report
 
 from rag_components.doc_loader import load_document
 from rag_components import chunker
+from rag_components.embedding_model import AVAILABLE_MODELS, embed_chunks
 
 def select_prompt_templates():
     print("\nChoose Prompting Strategies (comma-separated numbers):")
@@ -158,7 +159,7 @@ def rag_strategy():
 
     try:
         text = load_document(file_path)
-        print(f"\nDocument loaded successfully. Length: {len(text)} characters.\n")
+        print(f"\n✅ Document loaded successfully. Length: {len(text)} characters.\n")
     except Exception as e:
         print(f"⚠️ Error loading document: {e}")
         return
@@ -198,12 +199,30 @@ def rag_strategy():
     for i, chunk in enumerate(chunks, 1):
         print(f"\n[{i}]: {chunk}")
 
+    # 🔹 NEW: Ask user for embedding model
+    print("\n🔹 Available Embedding Models:")
+    for i, model in enumerate(AVAILABLE_MODELS, 1):
+        print(f"{i}. {model}")
+
+    try:
+        model_choice = int(input("\n👉 Select embedding model (enter number): ").strip())
+        model_name = AVAILABLE_MODELS[model_choice - 1]
+    except (ValueError, IndexError):
+        print("⚠️ Invalid model choice, using default (all-MiniLM-L6-v2).")
+        model_name = "sentence-transformers/all-MiniLM-L6-v2"
+
+    print(f"\n⚡ Generating embeddings using: {model_name}")
+    vectors = embed_chunks(chunks, model_name)
+
+    print(f"\n✅ Generated {len(vectors)} embeddings.")
+    print(f"Example vector length: {len(vectors[0])}")
+    print(f"First 10 values of first vector: {vectors[0][:10]}")
 
 def main():
     print("\nChoose Mode:")
     print("1. Single LLM Chat")
     print("2. Comparative Evaluation (Multiple Providers)")
-    print("3. RAG Document Chunking")
+    print("3. RAG Implementation")
 
     mode = input("Enter 1, 2, or 3: ").strip()
 
