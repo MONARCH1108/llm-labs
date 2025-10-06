@@ -228,7 +228,7 @@ def rag_strategy():
 
     print("\n📊 Retrieval Results (Top 3):")
     for r in results[:3]:
-        print(f"Chunk: {r['chunk'][:80]}...")
+        print(f"\nChunk:\n{r['chunk']}\n")
         print(f" Cosine: {r['cosine']:.4f} | Euclidean: {r['euclidean']:.4f} | Dot: {r['dot']:.4f}\n")
 
     return results
